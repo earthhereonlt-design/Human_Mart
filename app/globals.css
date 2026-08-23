@@ -1,0 +1,743 @@
+@import "tailwindcss";
+
+@theme {
+  /* ——— Manga palette: aged paper, india ink, shonen red ——— */
+  --color-ivory: #f3efe3;
+  --color-cream: #fbf8ee;
+  --color-parchment: #eae4d1;
+  --color-sand: #d8d1bb;
+  --color-stone: #b3ab93;
+  --color-ink: #16130e;
+  --color-ink-soft: #3c372d;
+  --color-ink-mute: #6b6454;
+  --color-ink-faint: #9d947f;
+  --color-night: #16130e;
+  --color-night-soft: #27221a;
+  --color-clay: #d81f26;
+  --color-clay-deep: #a5121a;
+  --color-clay-tint: #f7dcd6;
+  --color-sage: #5f6b4a;
+  --color-gold: #f2b31c;
+  --color-gold-deep: #c98f0a;
+  --color-blue: #2456c4;
+
+  --font-display: var(--font-dela), "Arial Black", sans-serif;
+  --font-sans: var(--font-zenmaru), system-ui, sans-serif;
+  --font-hand: var(--font-gochi), "Comic Sans MS", cursive;
+  --font-pixel: var(--font-dot), monospace;
+  --font-jp: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "MS Mincho", serif;
+
+  --text-eyebrow: 0.6875rem;
+  --tracking-eyebrow: 0.22em;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* buttons & links: no double-tap zoom delay, no text-selection drag */
+button,
+a,
+select,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body {
+  background-color: var(--color-ivory);
+  background-image: radial-gradient(rgba(22, 19, 14, 0.05) 1px, transparent 1.15px);
+  background-size: 7px 7px;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-clay);
+  color: #fbf8ee;
+}
+
+/* ——— shared primitives ——— */
+
+.container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 76rem;
+  padding-inline: 1.25rem;
+}
+@media (min-width: 768px) {
+  .container-page {
+    padding-inline: 2.5rem;
+  }
+}
+
+.rule {
+  border-color: var(--color-sand);
+}
+
+/* eyebrow label — pixel-print caps, like manga marginalia */
+.eyebrow {
+  font-family: var(--font-pixel);
+  font-size: 0.69rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-mute);
+}
+
+/* display impact face — heavy condensed, like manga SFX lettering */
+.headline {
+  font-family: var(--font-display);
+  line-height: 1;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+}
+
+/* hand-lettered dialogue */
+.hand {
+  font-family: var(--font-hand);
+}
+
+/* japanese mincho accent (system stack — renders kanji/katakana natively) */
+.jp {
+  font-family: var(--font-jp);
+}
+.jp-v {
+  writing-mode: vertical-rl;
+  font-family: var(--font-jp);
+  letter-spacing: 0.4em;
+}
+
+/* underline reveal for links */
+.link-editorial {
+  position: relative;
+  text-decoration: none;
+}
+.link-editorial::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  height: 2px;
+  width: 100%;
+  background: var(--color-clay);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.45s var(--ease-out-expo);
+}
+.link-editorial:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* focus visibility — calm but clear */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-clay);
+  outline-offset: 2px;
+}
+
+/* photos printed in the manga — ink on paper */
+.img-editorial {
+  filter: grayscale(1) contrast(1.16) brightness(1.03);
+}
+
+/* ——— manga panel — the building block of every card/box ——— */
+.panel {
+  border: 3px solid var(--color-ink);
+  background: var(--color-cream);
+  box-shadow: 6px 6px 0 var(--color-ink);
+}
+.panel-sm {
+  border: 2px solid var(--color-ink);
+  background: var(--color-cream);
+  box-shadow: 4px 4px 0 var(--color-ink);
+}
+.panel-red {
+  border: 3px solid var(--color-ink);
+  background: var(--color-clay);
+  color: var(--color-cream);
+  box-shadow: 6px 6px 0 var(--color-ink);
+}
+.panel-lift {
+  border: 3px solid var(--color-ink);
+  background: var(--color-cream);
+  box-shadow: 7px 7px 0 var(--color-ink);
+}
+.hard-shadow {
+  box-shadow: 5px 5px 0 var(--color-ink);
+}
+
+/* ——— gold SFX sticker ——— */
+.sfx-gold {
+  background: var(--color-gold) !important;
+  color: var(--color-ink) !important;
+}
+
+/* ——— shimmer — a print-light sweep over loading panels ——— */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(100deg, transparent 30%, rgba(22, 19, 14, 0.08) 50%, transparent 70%);
+  animation: shimmer-sweep 2.2s ease-in-out infinite;
+}
+@keyframes shimmer-sweep {
+  to { transform: translateX(100%); }
+}
+
+/* ——— screentones ——— */
+.halftone {
+  background-image: radial-gradient(rgba(22, 19, 14, 0.22) 1.1px, transparent 1.3px);
+  background-size: 8px 8px;
+}
+.halftone-fine {
+  background-image: radial-gradient(rgba(22, 19, 14, 0.16) 0.8px, transparent 1px);
+  background-size: 5px 5px;
+}
+.halftone-red {
+  background-image: radial-gradient(rgba(216, 31, 38, 0.3) 1.1px, transparent 1.3px);
+  background-size: 8px 8px;
+}
+.halftone-ghost {
+  background-image: radial-gradient(rgba(251, 248, 238, 0.13) 1.1px, transparent 1.3px);
+  background-size: 9px 9px;
+}
+
+/* ——— hatching ——— */
+.hatch {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent 0 6px,
+    rgba(22, 19, 14, 0.09) 6px 7px
+  );
+}
+
+/* ——— radial speed lines — a manga burst behind heroes ——— */
+.speedlines {
+  background: repeating-conic-gradient(
+    from -6deg at 50% 42%,
+    var(--color-ink) 0deg 0.55deg,
+    transparent 0.55deg 5.2deg
+  );
+  -webkit-mask-image: radial-gradient(circle at 50% 42%, transparent 24%, black 64%);
+  mask-image: radial-gradient(circle at 50% 42%, transparent 24%, black 64%);
+  opacity: 0.4;
+}
+
+/* ——— SFX lettering — outlined, skewed, red offset ——— */
+.sfx {
+  display: inline-block;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  transform: skewX(-8deg);
+  letter-spacing: 0.01em;
+}
+.sfx-outline {
+  color: var(--color-cream);
+  -webkit-text-stroke: 2px var(--color-ink);
+  text-shadow: 4px 4px 0 var(--color-clay);
+}
+
+/* ——— hanko stamp — red seal for tags & chapter marks ——— */
+.stamp {
+  display: inline-block;
+  font-family: var(--font-jp);
+  color: var(--color-clay);
+  border: 2px solid var(--color-clay);
+  padding: 0.2em 0.55em;
+  transform: rotate(-4deg);
+  line-height: 1.2;
+  background: color-mix(in srgb, var(--color-clay) 6%, transparent);
+}
+
+/* ——— speech bubble with tail ——— */
+.bubble {
+  position: relative;
+  background: var(--color-cream);
+  border: 2.5px solid var(--color-ink);
+  border-radius: 16px;
+  box-shadow: 3px 3px 0 var(--color-ink);
+}
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: 26px;
+  bottom: -10px;
+  width: 15px;
+  height: 15px;
+  background: var(--color-cream);
+  border-right: 2.5px solid var(--color-ink);
+  border-bottom: 2.5px solid var(--color-ink);
+  transform: rotate(45deg) skew(10deg, 10deg);
+}
+.bubble-right::after {
+  left: auto;
+  right: 26px;
+}
+
+/* ——— mascot animations (SVG parts) ——— */
+.m-bob {
+  animation: m-bob 3.4s ease-in-out infinite;
+}
+.m-blink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: m-blink 4.8s infinite;
+}
+.m-arm-wave {
+  transform-box: fill-box;
+  transform-origin: 18% 85%;
+  animation: m-wave 2.6s ease-in-out infinite;
+}
+.m-arm-wave-alt {
+  transform-box: fill-box;
+  transform-origin: 82% 85%;
+  animation: m-wave 2.6s ease-in-out 0.4s infinite;
+}
+.m-ahoge {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: m-ahoge 2.8s ease-in-out infinite;
+}
+.m-shake {
+  animation: m-shake 0.45s ease-in-out infinite;
+}
+.m-bounce {
+  animation: m-bounce 1s cubic-bezier(0.36, 0, 0.64, 1) infinite;
+}
+.m-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: m-pop 2.4s ease-out infinite;
+}
+.m-pop-slow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: m-pop 3.1s ease-out 0.7s infinite;
+}
+.m-float {
+  animation: m-float 3.2s ease-in-out infinite;
+}
+.m-sway {
+  transform-box: fill-box;
+  transform-origin: 15% 90%;
+  animation: m-sway 2.2s ease-in-out infinite;
+}
+.m-twitch {
+  animation: m-twitch 5s ease-in-out infinite;
+}
+/* secondary head bob — layered after the body bob for parallax life */
+.m-head-bob {
+  animation: m-head-bob 3.4s ease-in-out 0.45s infinite;
+}
+/* idle body sway — gentle side lean */
+.m-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 94%;
+  animation: m-sway 4.2s ease-in-out infinite;
+}
+/* double blink — blink-blink… pause */
+.m-blink2 {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: m-blink2 6s infinite;
+}
+/* pupils glance left, then right */
+.m-look {
+  animation: m-look 7s ease-in-out infinite;
+}
+/* breathing torso */
+.m-breathe {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: m-breathe 3.8s ease-in-out infinite;
+}
+/* cat tail wag */
+.m-tail {
+  transform-box: fill-box;
+  transform-origin: 0% 100%;
+  animation: m-tail 3s ease-in-out infinite;
+}
+/* cat bell pendulum */
+.m-bell {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: m-bell 2.2s ease-in-out infinite;
+}
+/* slow curious head tilt cycle */
+.m-tilt {
+  transform-box: fill-box;
+  transform-origin: 50% 85%;
+  animation: m-tilt 5s ease-in-out infinite;
+}
+
+@keyframes m-head-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes m-sway {
+  0%, 100% { transform: rotate(-1.2deg); }
+  50% { transform: rotate(1.2deg); }
+}
+@keyframes m-blink2 {
+  0%, 86%, 100% { transform: scaleY(1); }
+  88% { transform: scaleY(0.08); }
+  90% { transform: scaleY(1); }
+  92% { transform: scaleY(0.08); }
+  94% { transform: scaleY(1); }
+}
+@keyframes m-look {
+  0%, 14% { transform: translateX(0); }
+  28%, 58% { transform: translateX(-2.6px); }
+  72%, 86% { transform: translateX(2.2px); }
+  100% { transform: translateX(0); }
+}
+@keyframes m-breathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.02); }
+}
+@keyframes m-tail {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(14deg); }
+}
+@keyframes m-bell {
+  0%, 100% { transform: rotate(-9deg); }
+  50% { transform: rotate(9deg); }
+}
+@keyframes m-tilt {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(3deg); }
+}
+
+@keyframes m-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes m-blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  93% { transform: scaleY(0.08); }
+  96% { transform: scaleY(1); }
+}
+@keyframes m-wave {
+  0%, 100% { transform: rotate(12deg); }
+  35% { transform: rotate(-32deg); }
+  50% { transform: rotate(-16deg); }
+  70% { transform: rotate(-28deg); }
+}
+@keyframes m-ahoge {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(7deg); }
+}
+@keyframes m-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2.5px); }
+  75% { transform: translateX(2.5px); }
+}
+@keyframes m-bounce {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  30% { transform: translateY(-11px) scaleY(1.03); }
+  50% { transform: translateY(0) scaleY(0.97); }
+  70% { transform: translateY(-4px) scaleY(1.01); }
+}
+@keyframes m-pop {
+  0% { transform: scale(0); opacity: 0; }
+  16% { transform: scale(1.2); opacity: 1; }
+  28% { transform: scale(1); opacity: 1; }
+  82% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.85); opacity: 0; }
+}
+@keyframes m-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes m-sway {
+  0%, 100% { transform: rotate(14deg); }
+  50% { transform: rotate(-20deg); }
+}
+@keyframes m-twitch {
+  0%, 88%, 100% { transform: rotate(0deg); }
+  91% { transform: rotate(-3deg); }
+  94% { transform: rotate(3deg); }
+  97% { transform: rotate(-2deg); }
+}
+
+/* ——— night chapter — ink-black paper, paper-white ink ——— */
+[data-theme="night"] {
+  --color-ivory: #16130e;
+  --color-cream: #201c15;
+  --color-parchment: #1b1712;
+  --color-sand: #39332a;
+  --color-stone: #5a5344;
+  --color-ink: #f2eee2;
+  --color-ink-soft: #d8d2c2;
+  --color-ink-mute: #a89f8c;
+  --color-ink-faint: #7d7565;
+  --color-night: #0e0c08;
+  --color-night-soft: #16130e;
+  --color-clay: #e63946;
+  --color-clay-deep: #c1121f;
+  --color-clay-tint: #3a2023;
+  --color-sage: #9cab7a;
+  --color-gold: #ffc233;
+  --color-gold-deep: #d9a022;
+  --color-blue: #5b8cff;
+  color-scheme: dark;
+}
+[data-theme="night"] body {
+  background-image: radial-gradient(rgba(242, 238, 226, 0.07) 1px, transparent 1.15px);
+}
+[data-theme="night"] .halftone {
+  background-image: radial-gradient(rgba(242, 238, 226, 0.2) 1.1px, transparent 1.3px);
+}
+[data-theme="night"] .halftone-fine {
+  background-image: radial-gradient(rgba(242, 238, 226, 0.14) 0.8px, transparent 1px);
+}
+[data-theme="night"] .hatch {
+  background: repeating-linear-gradient(-45deg, transparent 0 6px, rgba(242, 238, 226, 0.1) 6px 7px);
+}
+[data-theme="night"] .img-editorial {
+  filter: grayscale(1) contrast(1.08) brightness(0.92);
+}
+
+/* ——— SFX impact burst — pops, overshoots, fades ——— */
+.sfx-burst {
+  animation: sfx-burst 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes sfx-burst {
+  0% { transform: scale(0.2) rotate(-18deg); opacity: 0; }
+  25% { transform: scale(1.15) rotate(-8deg); opacity: 1; }
+  40% { transform: scale(1) rotate(-10deg); opacity: 1; }
+  75% { transform: scale(1.04) rotate(-10deg); opacity: 1; }
+  100% { transform: scale(1.12) rotate(-10deg) translateY(-10px); opacity: 0; }
+}
+
+/* ——— speed-line flash on panel hover ——— */
+.speedflash {
+  background: repeating-linear-gradient(-45deg, transparent 0 7px, rgba(22, 19, 14, 0.26) 7px 9px);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.group:hover .speedflash { opacity: 1; }
+[data-theme="night"] .speedflash {
+  background: repeating-linear-gradient(-45deg, transparent 0 7px, rgba(242, 238, 226, 0.24) 7px 9px);
+}
+
+/* ——— page-turn entrance for chapter cards ——— */
+.page-turn {
+  transform-origin: left center;
+  animation: page-turn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes page-turn {
+  0% { transform: perspective(1200px) rotateY(-14deg) translateX(-18px); opacity: 0; }
+  100% { transform: perspective(1200px) rotateY(0deg) translateX(0); opacity: 1; }
+}
+
+/* ——— pencil wiggle for "now drawing" loaders ——— */
+.m-wiggle {
+  animation: m-wiggle 0.8s ease-in-out infinite;
+}
+@keyframes m-wiggle {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(7deg); }
+}
+
+/* ——— printed paper grain — a whisper of tooth over everything ——— */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>");
+}
+[data-theme="night"] body::after {
+  mix-blend-mode: screen;
+  opacity: 0.05;
+}
+
+/* ——— ink scrollbar ——— */
+html {
+  scrollbar-color: var(--color-ink) var(--color-ivory);
+}
+::-webkit-scrollbar {
+  width: 11px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ivory);
+  border-left: 2px solid var(--color-sand);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink);
+  border: 2px solid var(--color-ivory);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-clay);
+}
+
+/* ——— button sheen sweep ——— */
+.btn-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.btn-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 55%;
+  transform: translateX(-130%) skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  pointer-events: none;
+}
+.btn-sheen:hover::after {
+  animation: sheen-sweep 0.8s ease forwards;
+}
+@keyframes sheen-sweep {
+  to { transform: translateX(320%) skewX(-18deg); }
+}
+
+/* ——— typing caret ——— */
+.caret-blink {
+  animation: caret-blink 0.8s step-end infinite;
+}
+@keyframes caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ——— intro curtain — hidden pre-paint when the session already opened the book ——— */
+.intro-seen .intro-curtain {
+  display: none;
+}
+
+/* ——— the little book in the loader, forever turning a page ——— */
+.book-flip {
+  transform-origin: left center;
+  animation: book-flip 1.2s ease-in-out infinite;
+}
+@keyframes book-flip {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(-165deg); }
+}
+
+/* ——— nav links lift like a page corner about to turn ——— */
+.page-link {
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center bottom;
+}
+.page-link:hover {
+  transform: perspective(500px) rotateX(-16deg);
+}
+
+/* ——— mascot gaze — pupils/head drift toward the cursor ——— */
+.m-gaze {
+  transform: translate(var(--gx, 0px), var(--gy, 0px));
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ——— rules that ink themselves in ——— */
+.rule-draw {
+  transform-origin: left center;
+  animation: rule-draw 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+@keyframes rule-draw {
+  from { transform: scaleX(0); }
+}
+
+/* ——— ambient loops ——— */
+
+/* slow breathing — for idle mascots and stamps */
+.m-breathe-slow {
+  animation: m-breathe 9s ease-in-out infinite;
+}
+@keyframes m-breathe {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.92; }
+}
+
+/* accent ripple — draws the eye to live things (cart badge, CTAs) */
+.pulse-ring {
+  animation: pulse-ring 2.4s cubic-bezier(0.45, 0, 0.15, 1) infinite;
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(216, 31, 38, 0.55); }
+  70% { box-shadow: 0 0 0 9px rgba(216, 31, 38, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(216, 31, 38, 0); }
+}
+
+/* drifting ink gradient — red→gold→red text shimmer */
+.gradient-drift {
+  background: linear-gradient(115deg, var(--color-clay), var(--color-gold), var(--color-clay));
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-drift 8s ease-in-out infinite;
+}
+@keyframes gradient-drift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* sfx sticker pop — arrives small & tilted, overshoots, settles */
+.sfx-pop {
+  display: inline-block;
+  animation: sfx-pop 0.6s cubic-bezier(0.34, 1.45, 0.44, 1) both;
+}
+@keyframes sfx-pop {
+  0% { transform: scale(0.4) rotate(-14deg); opacity: 0; }
+  60% { transform: scale(1.12) rotate(-2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-4deg); opacity: 1; }
+}
+
+/* marquee fades at the edges like it runs off the page */
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+}
+
+/* touch devices — no hover-only flourishes */
+@media (hover: none) {
+  .btn-sheen::after { display: none; }
+  .speedflash { display: none; }
+  .page-link:hover { transform: none; }
+}
+
+/* marquee */
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee-x 36s linear infinite;
+}
+.marquee-wrap:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* reduced motion — respect it everywhere */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .marquee-track { animation: none; }
+  .link-editorial::after { transition: none; }
+  .btn-sheen::after { display: none; }
+  body::after { display: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
