@@ -7,6 +7,25 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Input";
 
+/** Friendly, tech-free error copy — visitors never see provider jargon. */
+function friendlyAuthError(err: unknown): string {
+  const msg = err instanceof Error ? err.message.toLowerCase() : "";
+  const status = (err as { status?: number } | null)?.status;
+  if (msg.includes("rate limit") || msg.includes("too many") || status === 429)
+    return "The mail owl is tired — too many attempts in a short while. Give it a minute, then try again.";
+  if (msg.includes("already registered"))
+    return "That email already belongs to a human. Try signing in instead.";
+  if (msg.includes("invalid login credentials"))
+    return "That email and password don't match any human.";
+  if (msg.includes("at least 6 characters"))
+    return "Passwords need at least 6 characters.";
+  if (msg.includes("valid email") || msg.includes("invalid email"))
+    return "That email address looks imaginary.";
+  if (msg.includes("failed to fetch") || msg.includes("network"))
+    return "Can't reach the market right now — check your connection.";
+  return "Something went wrong on our side. Please try again.";
+}
+
 export function AuthForm({
   mode,
   next,
@@ -50,13 +69,7 @@ export function AuthForm({
         router.refresh();
       }
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message === "Invalid login credentials"
-            ? "That email and password don't match any human."
-            : err.message
-          : "Something went wrong."
-      );
+      setError(friendlyAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -67,9 +80,9 @@ export function AuthForm({
       <div className="border border-sand bg-cream p-8 text-center">
         <p className="headline text-2xl">Almost in.</p>
         <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-ink-mute">
-          Supabase wants to confirm your email first. Click the link it just
-          sent you, then sign in. (To skip this in local development, disable
-          &ldquo;Confirm email&rdquo; in Supabase → Authentication → Sign-in providers.)
+          One more step — a confirmation letter is on its way to your inbox.
+          Click the link inside, then sign in. If nothing arrives, wait a
+          minute and try registering again.
         </p>
       </div>
     );

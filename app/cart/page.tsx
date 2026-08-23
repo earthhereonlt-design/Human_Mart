@@ -66,7 +66,7 @@ function CartInner() {
                   >
                     {l.photoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={l.photoUrl} alt="" className="img-editorial h-full w-full object-cover" />
+                      <img src={l.photoUrl} alt="" loading="lazy" decoding="async" className="img-editorial h-full w-full object-cover" />
                     ) : (
                       <span className="grid h-full place-items-center headline text-2xl text-stone">
                         {initials(l.personName)}

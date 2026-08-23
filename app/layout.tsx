@@ -15,7 +15,7 @@ const dela = Dela_Gothic_One({
 });
 
 const zenMaru = Zen_Maru_Gothic({
-  weight: ["500", "700", "900"],
+  weight: ["500", "700"],
   subsets: ["latin"],
   variable: "--font-zenmaru",
 });

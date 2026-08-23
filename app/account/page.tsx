@@ -12,10 +12,10 @@ export default async function AccountPage() {
   if (!isSupabaseConfigured()) {
     return (
       <div className="container-page py-20">
-        <h1 className="headline text-3xl">Connect Supabase first</h1>
-        <p className="mt-3 max-w-md text-sm text-ink-mute">
-          The account system lives in your Supabase project. See the README for
-          the two-minute setup.
+        <h1 className="headline text-3xl">The ledger is still being bound.</h1>
+        <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-mute">
+          Accounts unlock when the market formally opens its doors. The
+          shopkeeper is stamping the membership cards — check back soon.
         </p>
       </div>
     );

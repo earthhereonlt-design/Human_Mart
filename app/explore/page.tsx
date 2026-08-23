@@ -101,15 +101,12 @@ export default async function ExplorePage({ searchParams }: ExploreProps) {
 function SetupNote() {
   return (
     <div className="border border-clay/30 bg-clay-tint/50 p-6 md:p-10">
-      <p className="eyebrow !text-clay-deep">One step left</p>
+      <p className="eyebrow !text-clay-deep">Back soon</p>
+      <p className="headline mt-3 text-2xl">The shelves are being arranged.</p>
       <p className="mt-3 max-w-lg text-sm leading-relaxed text-ink-soft">
-        The market can&apos;t open until Supabase is connected. Create a free
-        project at{" "}
-        <span className="font-medium">supabase.com</span>, run{" "}
-        <code className="bg-cream px-1.5 py-0.5 text-[12px]">supabase/schema.sql</code>{" "}
-        in its SQL editor, copy your URL and anon key into{" "}
-        <code className="bg-cream px-1.5 py-0.5 text-[12px]">.env.local</code>, and
-        restart. The README holds your hand through all of it.
+        The market is still setting up behind the curtain — stock arrives
+        shortly. Meanwhile, do some window-shopping in your head: who&apos;s the
+        first human you&apos;d put on a shelf?
       </p>
     </div>
   );
