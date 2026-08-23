@@ -183,6 +183,8 @@ $$;
 
 -- ------------------------------------------------------------
 -- ROW LEVEL SECURITY
+-- (every policy is dropped-then-recreated so this file can be
+--  re-run safely, no matter how far a previous attempt got)
 -- ------------------------------------------------------------
 alter table public.profiles enable row level security;
 alter table public.people   enable row level security;
@@ -192,31 +194,46 @@ alter table public.orders   enable row level security;
 alter table public.reports  enable row level security;
 
 -- profiles: readable by all (names show on reviews), editable by owner
+drop policy if exists "profiles readable" on public.profiles;
+drop policy if exists "profiles self-update" on public.profiles;
 create policy "profiles readable" on public.profiles for select using (true);
 create policy "profiles self-update" on public.profiles for update using (auth.uid() = id);
 
 -- people: readable by all; created by any logged-in user; editable by creator/claimer
+drop policy if exists "people readable" on public.people;
+drop policy if exists "people insert" on public.people;
+drop policy if exists "people update" on public.people;
 create policy "people readable" on public.people for select using (true);
 create policy "people insert" on public.people for insert to authenticated with check (auth.uid() = created_by);
 create policy "people update" on public.people for update
   using (auth.uid() = created_by or auth.uid() = claimed_by);
 
 -- listings: active ones readable by all; CRUD by owner
+drop policy if exists "listings readable" on public.listings;
+drop policy if exists "listings insert" on public.listings;
+drop policy if exists "listings update" on public.listings;
+drop policy if exists "listings delete" on public.listings;
 create policy "listings readable" on public.listings for select using (true);
 create policy "listings insert" on public.listings for insert to authenticated with check (auth.uid() = created_by);
 create policy "listings update" on public.listings for update using (auth.uid() = created_by);
 create policy "listings delete" on public.listings for delete using (auth.uid() = created_by);
 
 -- reviews: readable by all; insert/delete your own
+drop policy if exists "reviews readable" on public.reviews;
+drop policy if exists "reviews insert" on public.reviews;
+drop policy if exists "reviews delete" on public.reviews;
 create policy "reviews readable" on public.reviews for select using (true);
 create policy "reviews insert" on public.reviews for insert to authenticated with check (auth.uid() = author_id);
 create policy "reviews delete" on public.reviews for delete using (auth.uid() = author_id);
 
 -- orders: strictly private to the buyer
+drop policy if exists "orders own" on public.orders;
+drop policy if exists "orders insert" on public.orders;
 create policy "orders own" on public.orders for select using (auth.uid() = buyer_id);
 create policy "orders insert" on public.orders for insert to authenticated with check (auth.uid() = buyer_id);
 
 -- reports: anyone logged in can file; nobody reads them via the API
+drop policy if exists "reports insert" on public.reports;
 create policy "reports insert" on public.reports for insert to authenticated with check (auth.uid() = reporter_id);
 
 -- ------------------------------------------------------------
@@ -226,6 +243,9 @@ insert into storage.buckets (id, name, public)
 values ('photos', 'photos', true)
 on conflict (id) do nothing;
 
+drop policy if exists "photos public read" on storage.objects;
+drop policy if exists "photos authenticated upload" on storage.objects;
+drop policy if exists "photos owner delete" on storage.objects;
 create policy "photos public read" on storage.objects
   for select using (bucket_id = 'photos');
 create policy "photos authenticated upload" on storage.objects
