@@ -27,17 +27,24 @@ export default async function AccountPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/account");
 
-  const [profileRes, listingsRes, ordersRes] = await Promise.all([
+  // own listing ids first — the market view doesn't expose created_by
+  const mineRes = await supabase.from("listings").select("id").eq("created_by", user.id);
+  const ownIds = (mineRes.data ?? []).map((r: { id: string }) => r.id);
+
+  const [profileRes, listingsRes, ordersRes, peopleRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-    supabase
-      .from("market_listings")
-      .select("*")
-      .eq("created_by", user.id)
-      .order("created_at", { ascending: false }),
+    ownIds.length
+      ? supabase.from("market_listings").select("*").in("id", ownIds).order("created_at", { ascending: false })
+      : Promise.resolve({ data: [] as never[] }),
     supabase
       .from("orders")
       .select("*")
       .eq("buyer_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("people")
+      .select("id, name, slug")
+      .eq("created_by", user.id)
       .order("created_at", { ascending: false }),
   ]);
 
@@ -53,6 +60,7 @@ export default async function AccountPage() {
 
   const myListings = (listingsRes.data ?? []) as MarketListing[];
   const orders = (ordersRes.data ?? []) as OrderRow[];
+  const myPeople = (peopleRes.data ?? []) as Array<{ id: string; name: string; slug: string }>;
 
   return (
     <div className="container-page py-14 md:py-20">
@@ -61,7 +69,7 @@ export default async function AccountPage() {
       <h1 className="headline mt-3 text-4xl md:text-5xl">{profile.display_name}</h1>
 
       <div className="mt-12">
-        <AccountTabs profile={profile} myListings={myListings} orders={orders} />
+        <AccountTabs profile={profile} myListings={myListings} orders={orders} myPeople={myPeople} />
       </div>
     </div>
   );

@@ -208,6 +208,11 @@ create policy "people insert" on public.people for insert to authenticated with 
 create policy "people update" on public.people for update
   using (auth.uid() = created_by or auth.uid() = claimed_by);
 
+-- whoever shelved a human can take them off the shelf (their listings cascade)
+drop policy if exists "people owner delete" on public.people;
+create policy "people owner delete" on public.people
+  for delete using (auth.uid() = created_by);
+
 -- listings: active ones readable by all; CRUD by owner
 drop policy if exists "listings readable" on public.listings;
 drop policy if exists "listings insert" on public.listings;

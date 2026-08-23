@@ -18,10 +18,12 @@ export function AccountTabs({
   profile,
   myListings,
   orders,
+  myPeople,
 }: {
   profile: Profile;
   myListings: MarketListing[];
   orders: OrderRow[];
+  myPeople: Array<{ id: string; name: string; slug: string }>;
 }) {
   const [tab, setTab] = useState<Tab>("listings");
   const router = useRouter();
@@ -121,6 +123,41 @@ export function AccountTabs({
                 ))}
               </ul>
             )}
+            <div className="mt-10">
+              <p className="eyebrow">Humans you put on the shelf</p>
+              {myPeople.length === 0 ? (
+                <p className="mt-3 text-sm text-ink-mute">
+                  Nobody yet — every human you list an offering for appears here.
+                </p>
+              ) : (
+                <ul className="mt-3 divide-y divide-sand border-y border-sand">
+                  {myPeople.map((p) => (
+                    <li key={p.id} className="flex items-center gap-3 py-3.5">
+                      <Link href={`/person/${p.slug}`} className="link-editorial headline text-base">
+                        {p.name}
+                      </Link>
+                      <span className="flex-1" />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        loading={busy === `pp-${p.id}`}
+                        onClick={async () => {
+                          if (!window.confirm(`Take ${p.name} off the shelf? All their listings go too.`)) return;
+                          setBusy(`pp-${p.id}`);
+                          const supabase = createClient();
+                          const { error } = await supabase.from("people").delete().eq("id", p.id);
+                          setBusy(null);
+                          if (error) window.alert("Could not remove them — try again.");
+                          else router.refresh();
+                        }}
+                      >
+                        <Trash2 size={13} /> Remove
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </motion.div>
         )}
 
