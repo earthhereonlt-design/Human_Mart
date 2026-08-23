@@ -26,7 +26,7 @@ export default async function LandingPage() {
       <Marquee />
 
       {/* how it works — chapter of panels */}
-      <section id="how" className="container-page scroll-mt-24 py-20 md:py-28">
+      <section id="how" className="container-page scroll-mt-24 py-12 md:py-28">
         <div className="grid gap-12 md:grid-cols-[1fr_1.6fr] md:gap-20">
           <Reveal variant="3d">
             <div>
@@ -64,7 +64,7 @@ export default async function LandingPage() {
               <StaggerItem
                 key={s.n}
                 variant={i % 2 === 0 ? "left" : "right"}
-                className={`flex gap-6 py-8 md:gap-10 md:py-10 ${i < arr.length - 1 ? "border-b-2 border-ink/15" : ""}`}
+                className={`flex gap-4 py-5 md:gap-10 md:py-10 ${i < arr.length - 1 ? "border-b-2 border-ink/15" : ""}`}
               >
                 <span className="halftone-fine headline shrink-0 border-2 border-ink bg-cream px-2.5 py-1 text-2xl text-clay shadow-[3px_3px_0_var(--color-ink)] md:text-3xl">
                   {s.n}
@@ -80,7 +80,7 @@ export default async function LandingPage() {
       </section>
 
       {/* featured humans (live data) */}
-      <section className="relative border-t-[3px] border-ink bg-parchment py-20 md:py-28">
+      <section className="relative border-t-[3px] border-ink bg-parchment py-12 md:py-28">
         <div className="hatch absolute inset-0 opacity-60" aria-hidden="true" />
         <div className="container-page relative">
           <Reveal variant="3d">

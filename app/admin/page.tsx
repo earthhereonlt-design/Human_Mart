@@ -33,7 +33,7 @@ export default async function AdminPage() {
   const maintenance = (settings?.value ?? { on: false, ends_at: null, note: null }) as Maintenance;
 
   return (
-    <div className="container-page py-14 md:py-20">
+    <div className="container-page py-10 md:py-20">
       <ChapterCard jp="編集室" title="The editor's room" sub="Admin — everything the market owns" />
       <div className="mt-10">
         <AdminPanel snapshot={snapRes as never} maintenance={maintenance} myId={user.id} />

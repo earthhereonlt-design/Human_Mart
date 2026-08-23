@@ -57,7 +57,7 @@ export function Hero({ people, listings }: { people: number; listings: number })
       </span>
 
       <motion.div
-        className="container-page relative flex items-end justify-center gap-6 pb-20 pt-16 md:gap-12 md:pb-28 md:pt-24"
+        className="container-page relative flex items-end justify-center gap-6 pb-12 pt-10 md:gap-12 md:pb-28 md:pt-24"
         style={reduce ? undefined : { opacity: fadeHero }}
         initial="hidden"
         animate="show"
@@ -82,10 +82,10 @@ export function Hero({ people, listings }: { people: number; listings: number })
               hidden: { opacity: 0, y: 40, scale: 0.7 },
               show: { opacity: 1, y: 0, scale: 1, transition: { ...springBouncy, delay: 0.55 } },
             }}
-            className="mb-1 flex items-end justify-center gap-5 md:hidden"
+            className="mb-0 flex items-end justify-center gap-4 md:hidden"
           >
-            <Chibi mood="waiting" className="h-32 w-auto" />
-            <LuckyCat className="h-24 w-auto self-center" />
+            <Chibi mood="waiting" className="h-24 w-auto" />
+            <LuckyCat className="h-18 w-auto self-center" />
           </motion.div>
 
           <motion.div
@@ -98,7 +98,7 @@ export function Hero({ people, listings }: { people: number; listings: number })
           </motion.div>
 
           {/* title — each word slams in like SFX lettering */}
-          <h1 className="headline mt-5 text-[clamp(2.9rem,8.5vw,6rem)] leading-[0.92]">
+          <h1 className="headline mt-3 text-[clamp(2.5rem,8.5vw,6rem)] leading-[0.92]">
             {TITLE_LINES.map((line, li) => (
               <span key={li} className="block">
                 {line.map((w) => (
@@ -116,7 +116,7 @@ export function Hero({ people, listings }: { people: number; listings: number })
 
           <motion.div
             variants={{ hidden: { opacity: 0, scale: 0.85, y: 16 }, show: { opacity: 1, scale: 1, y: 0, transition: springSoft } }}
-            className="bubble mx-auto mt-8 max-w-md px-6 py-4 text-left"
+            className="bubble mx-auto mt-6 max-w-md px-5 py-3 text-left md:mt-8 md:px-6 md:py-4"
           >
             <span className="hand text-lg leading-snug text-ink-soft">
               “{typed}
@@ -129,12 +129,12 @@ export function Hero({ people, listings }: { people: number; listings: number })
 
           <motion.div
             variants={{ hidden: { opacity: 0, y: 26 }, show: { opacity: 1, y: 0, transition: springSoft } }}
-            className="mt-10 flex flex-col justify-center gap-4 sm:flex-row"
+            className="mt-7 flex flex-col justify-center gap-3 sm:flex-row md:mt-10 md:gap-4"
           >
             <Magnetic>
               <Link
                 href="/explore"
-                className="btn-sheen inline-flex h-[52px] items-center justify-center border-2 border-ink bg-clay px-9 font-display text-[15px] uppercase tracking-[0.08em] text-[#fbf8ee] shadow-[4px_4px_0_var(--color-ink)] transition-all duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
+                className="btn-sheen inline-flex h-12 items-center justify-center border-2 border-ink bg-clay px-7 font-display text-sm uppercase tracking-[0.08em] text-[#fbf8ee] shadow-[4px_4px_0_var(--color-ink)] transition-all duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_var(--color-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:h-[52px] md:px-9 md:text-[15px]"
               >
                 Read the market
               </Link>
@@ -142,7 +142,7 @@ export function Hero({ people, listings }: { people: number; listings: number })
             <Magnetic>
               <Link
                 href="/list"
-                className="btn-sheen inline-flex h-[52px] items-center justify-center border-2 border-ink bg-cream px-9 font-display text-[15px] uppercase tracking-[0.08em] text-ink shadow-[4px_4px_0_var(--color-ink)] transition-all duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-ink hover:text-[#fbf8ee] hover:shadow-[6px_6px_0_var(--color-clay)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
+                className="btn-sheen inline-flex h-12 items-center justify-center border-2 border-ink bg-cream px-7 font-display text-sm uppercase tracking-[0.08em] text-ink shadow-[4px_4px_0_var(--color-ink)] transition-all duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-ink hover:text-[#fbf8ee] hover:shadow-[6px_6px_0_var(--color-clay)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:h-[52px] md:px-9 md:text-[15px]"
               >
                 List a human
               </Link>
@@ -152,18 +152,18 @@ export function Hero({ people, listings }: { people: number; listings: number })
           {people > 0 && (
             <motion.div
               variants={{ hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0, transition: springSoft } }}
-              className="mt-12 flex flex-wrap items-stretch justify-center gap-3"
-            >
-              {[
-                { n: people, count: true, l: "humans in stock" },
-                { n: listings, count: true, l: "offerings shelved" },
-                { n: 0, count: false, l: "refunds on personality" },
-              ].map((s) => (
-                <div
-                  key={s.l}
-                  className="halftone-fine border-2 border-ink bg-cream px-5 py-3 shadow-[3px_3px_0_var(--color-ink)]"
-                >
-                  <p className="font-display text-2xl tabular-nums">
+            className="mt-8 flex flex-wrap items-stretch justify-center gap-2.5 md:mt-12 md:gap-3"
+          >
+            {[
+              { n: people, count: true, l: "humans in stock" },
+              { n: listings, count: true, l: "offerings shelved" },
+              { n: 0, count: false, l: "refunds on personality" },
+            ].map((s) => (
+              <div
+                key={s.l}
+                className="halftone-fine border-2 border-ink bg-cream px-3.5 py-2 shadow-[3px_3px_0_var(--color-ink)] md:px-5 md:py-3"
+              >
+                <p className="font-display text-xl tabular-nums md:text-2xl">
                     {s.count ? <CountUp to={s.n} /> : s.n}
                   </p>
                   <p className="eyebrow mt-0.5 !text-[9px]">{s.l}</p>

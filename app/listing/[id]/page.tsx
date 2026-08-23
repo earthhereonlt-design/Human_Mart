@@ -42,7 +42,7 @@ export default async function ListingPage({ params }: PageProps) {
   ]);
 
   return (
-    <div className="container-page py-12 md:py-16">
+    <div className="container-page py-8 md:py-14">
       {/* breadcrumb */}
       <nav aria-label="Breadcrumb" className="text-[11px] uppercase tracking-[0.16em] text-ink-faint">
         <Link href="/explore" className="hover:text-ink">Market</Link>

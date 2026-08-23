@@ -23,7 +23,7 @@ export function EmptyState({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col items-center py-16 text-center", className)}>
+    <div className={cn("flex flex-col items-center py-10 text-center", className)}>
       <CreatureScene mood={mood} caption={caption} compact className="w-full max-w-60" />
       <h3 className="headline mt-8 text-2xl md:text-[28px]">{title}</h3>
       <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-mute">{body}</p>

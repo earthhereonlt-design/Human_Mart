@@ -30,7 +30,7 @@ export default async function ListPage() {
   }
 
   return (
-    <div className="container-page py-14 md:py-20">
+    <div className="container-page py-10 md:py-20">
       <div className="max-w-xl">
         <ChapterCard
           jp="特別編"

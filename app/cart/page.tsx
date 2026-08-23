@@ -28,7 +28,7 @@ function CartInner() {
   const totals = computeTotals(lines);
 
   return (
-    <div className="container-page py-14 md:py-20">
+    <div className="container-page py-10 md:py-20">
       <ChapterCard jp="第3話" title="Your cart" sub="Checkout, step one of three" />
       <div className="mt-6">
         <PageStepper current={0} />
@@ -116,7 +116,7 @@ function CartInner() {
           {/* summary */}
           <aside className="lg:sticky lg:top-28 lg:self-start">
             <div className="mb-6 flex items-end gap-3">
-              <Chibi mood="celebrate" className="h-28 w-auto shrink-0" />
+              <Chibi mood="celebrate" className="h-24 w-auto shrink-0 md:h-28" />
               <p className="bubble max-w-44 px-4 py-3">
                 <span className="hand text-base leading-snug text-ink-soft">
                   Excellent taste, customer-san!

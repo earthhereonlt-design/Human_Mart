@@ -13,10 +13,10 @@ export default async function LoginPage({
   const { next } = await searchParams;
 
   return (
-    <div className="container-page flex justify-center py-20 md:py-28">
+    <div className="container-page flex justify-center py-12 md:py-28">
       <div className="w-full max-w-sm">
         <div className="flex items-end justify-center gap-3">
-          <Chibi mood="waiting" className="h-36 w-auto" />
+          <Chibi mood="waiting" className="h-28 w-auto md:h-36" />
           <p className="bubble mb-6 max-w-40 px-4 py-3">
             <span className="hand text-base leading-snug text-ink-soft">
               Back so soon? The usual table?

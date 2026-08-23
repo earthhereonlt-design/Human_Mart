@@ -60,7 +60,7 @@ function CheckoutInner() {
 
   if (lines.length === 0) {
     return (
-      <div className="container-page py-14 md:py-20">
+      <div className="container-page py-10 md:py-20">
         <h1 className="headline text-4xl">Address</h1>
         <div className="mt-6">
           <EmptyState
@@ -76,7 +76,7 @@ function CheckoutInner() {
   }
 
   return (
-    <div className="container-page py-14 md:py-20">
+    <div className="container-page py-10 md:py-20">
       <ChapterCard jp="第4話" title="Delivery address" sub="Checkout, step two of three" />
       <div className="mt-6">
         <PageStepper current={1} />

@@ -54,7 +54,7 @@ function PaymentInner() {
 
   if (lines.length === 0 && phase === "form") {
     return (
-      <div className="container-page py-14 md:py-20">
+      <div className="container-page py-10 md:py-20">
         <h1 className="headline text-4xl">Payment</h1>
         <div className="mt-6">
           <EmptyState
@@ -119,7 +119,7 @@ function PaymentInner() {
 
   return (
     <>
-      <div className="container-page py-14 md:py-20">
+      <div className="container-page py-10 md:py-20">
         <ChapterCard jp="第5話" title="Payment" sub="Checkout, step three of three" />
         <div className="mt-6">
           <PageStepper current={2} />
@@ -227,7 +227,7 @@ function PaymentInner() {
           {/* summary */}
           <aside className="lg:sticky lg:top-28 lg:self-start">
             <div className="mb-6 flex items-end gap-3">
-              <Chibi mood="waiting" className="h-28 w-auto shrink-0" />
+              <Chibi mood="waiting" className="h-24 w-auto shrink-0 md:h-28" />
               <p className="bubble max-w-40 px-4 py-3">
                 <span className="hand text-base leading-snug text-ink-soft">
                   Counting rupees, counting rupees…

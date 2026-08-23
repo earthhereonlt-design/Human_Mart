@@ -34,7 +34,7 @@ export default async function PersonPage({ params }: PageProps) {
   const listings = await getPersonListings(person.id);
 
   return (
-    <div className="container-page py-12 md:py-16">
+    <div className="container-page py-8 md:py-14">
       <ChapterMark jp="人物ファイル" className="mb-6" />
 
       {/* header */}

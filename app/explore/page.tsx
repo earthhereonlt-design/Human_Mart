@@ -30,7 +30,7 @@ export default async function ExplorePage({ searchParams }: ExploreProps) {
   const searching = Boolean(q);
 
   return (
-    <div className="container-page relative py-14 md:py-20">
+    <div className="container-page relative py-10 md:py-20">
       {/* vertical side label */}
       <span
         className="jp-v absolute right-2 top-24 hidden text-sm text-ink-faint lg:block"

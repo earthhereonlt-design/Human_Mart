@@ -63,7 +63,7 @@ export default async function AccountPage() {
   const myPeople = (peopleRes.data ?? []) as Array<{ id: string; name: string; slug: string }>;
 
   return (
-    <div className="container-page py-14 md:py-20">
+    <div className="container-page py-10 md:py-20">
       <ChapterMark jp="第7話" className="mb-6" />
       <span className="eyebrow">Signed in as {profile.email}</span>
       <h1 className="headline mt-3 text-4xl md:text-5xl">{profile.display_name}</h1>

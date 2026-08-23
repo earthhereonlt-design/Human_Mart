@@ -3,12 +3,12 @@ import { Chibi } from "@/components/manga/Mascot";
 
 export default function NotFound() {
   return (
-    <div className="container-page py-20 md:py-28">
+    <div className="container-page py-12 md:py-28">
       <div className="relative mx-auto max-w-xl overflow-hidden border-[3px] border-ink bg-cream shadow-[6px_6px_0_var(--color-ink)]">
         <div className="speedlines absolute inset-0" aria-hidden="true" />
         <div className="relative flex flex-col items-center px-6 pb-12 pt-10 text-center">
           <span className="sfx sfx-outline text-5xl md:text-6xl">迷子!</span>
-          <Chibi mood="problem" className="mt-8 h-56 w-auto md:h-64" />
+          <Chibi mood="problem" className="mt-6 h-40 w-auto md:h-64" />
           <h1 className="headline mt-8 text-3xl md:text-4xl">
             This shelf is empty.
           </h1>
