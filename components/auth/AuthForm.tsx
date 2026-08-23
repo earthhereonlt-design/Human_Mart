@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Input";
@@ -40,6 +41,7 @@ export function AuthForm({
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -117,15 +119,27 @@ export function AuthForm({
         required
         hint={isRegister ? "At least 6 characters." : undefined}
       >
-        <Input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          autoComplete={isRegister ? "new-password" : "current-password"}
-          required
-          minLength={6}
-        />
+        <div className="relative">
+          <Input
+            type={showPw ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            autoComplete={isRegister ? "new-password" : "current-password"}
+            required
+            minLength={6}
+            className="pr-12"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPw((v) => !v)}
+            aria-label={showPw ? "Hide password" : "Show password"}
+            aria-pressed={showPw}
+            className="absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center border-2 border-transparent text-ink-faint transition-colors hover:border-ink hover:text-ink"
+          >
+            {showPw ? <EyeOff size={15} strokeWidth={2} /> : <Eye size={15} strokeWidth={2} />}
+          </button>
+        </div>
       </Field>
 
       {error && (
