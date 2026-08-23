@@ -412,19 +412,19 @@ security definer
 set search_path = public
 as $$
   select jsonb_build_object(
-    'listings', (select coalesce(jsonb_agg(t) from (
+    'listings', (select coalesce(jsonb_agg(t), '[]'::jsonb) from (
         select id, title, price, unit, category, is_active, created_at,
                person_name, person_slug
-        from public.market_listings order by created_at desc limit 200) t)),
-    'people', (select coalesce(jsonb_agg(t) from (
+        from public.market_listings order by created_at desc limit 200) t),
+    'people', (select coalesce(jsonb_agg(t), '[]'::jsonb) from (
         select id, name, slug, photo_url, created_at
-        from public.people order by created_at desc limit 200) t)),
-    'users', (select coalesce(jsonb_agg(t) from (
+        from public.people order by created_at desc limit 200) t),
+    'users', (select coalesce(jsonb_agg(t), '[]'::jsonb) from (
         select id, display_name, email, is_admin, created_at
-        from public.profiles order by created_at desc limit 200) t)),
-    'orders', (select coalesce(jsonb_agg(t) from (
+        from public.profiles order by created_at desc limit 200) t),
+    'orders', (select coalesce(jsonb_agg(t), '[]'::jsonb) from (
         select id, buyer_id, items, totals, payment_method, created_at
-        from public.orders order by created_at desc limit 100) t)),
+        from public.orders order by created_at desc limit 100) t),
     'stats', jsonb_build_object(
         'humans', (select count(*) from public.people),
         'listings', (select count(*) from public.listings),
