@@ -14,7 +14,7 @@ const LINKS = [
   { href: "/explore#categories", label: "Categories" },
 ];
 
-export function Header({ userName }: { userName: string | null }) {
+export function Header({ userName, isAdmin }: { userName: string | null; isAdmin?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const lines = useCart((s) => s.lines);
@@ -82,6 +82,14 @@ export function Header({ userName }: { userName: string | null }) {
                 {l.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="jp -rotate-1 border-2 border-clay px-2 py-0.5 text-[11px] text-clay transition-colors hover:bg-clay hover:text-[#fbf8ee]"
+              >
+                管理人
+              </Link>
+            )}
           </nav>
 
           {/* actions */}
@@ -163,6 +171,7 @@ export function Header({ userName }: { userName: string | null }) {
                 { href: "/explore#categories", label: "Categories" },
                 { href: userName ? "/account" : "/login", label: userName ? `Account — ${userName}` : "Sign in" },
                 { href: "/cart", label: "Cart" },
+                ...(isAdmin ? [{ href: "/admin", label: "管理人 Admin" }] : []),
               ].map((l, i) => (
                 <motion.div
                   key={l.label}

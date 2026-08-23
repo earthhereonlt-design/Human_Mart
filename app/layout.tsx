@@ -45,6 +45,7 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   let userName: string | null = null;
+  let isAdmin = false;
   if (isSupabaseConfigured()) {
     try {
       const supabase = await createClient();
@@ -54,10 +55,11 @@ export default async function RootLayout({
       if (user) {
         const { data } = await supabase
           .from("profiles")
-          .select("display_name")
+          .select("display_name, is_admin")
           .eq("id", user.id)
           .maybeSingle();
         userName = data?.display_name ?? null;
+        isAdmin = Boolean(data?.is_admin);
       }
     } catch {
       // not signed in or db unreachable — header shows signed-out state
@@ -93,7 +95,7 @@ export default async function RootLayout({
         >
           Skip to content
         </a>
-        <Header userName={userName} />
+        <Header userName={userName} isAdmin={isAdmin} />
         <main id="main" className="flex-1">
           {children}
         </main>

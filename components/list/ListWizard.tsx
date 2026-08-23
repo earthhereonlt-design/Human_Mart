@@ -182,7 +182,7 @@ export function ListWizard({ myName, myPersonId }: Props) {
                     <Input
                       value={personName}
                       onChange={(e) => setPersonName(e.target.value)}
-                      placeholder="e.g. Priya"
+                      placeholder="e.g. Luffy"
                       minLength={2}
                     />
                   </Field>
@@ -195,7 +195,7 @@ export function ListWizard({ myName, myPersonId }: Props) {
                   <Input
                     value={personBio}
                     onChange={(e) => setPersonBio(e.target.value)}
-                    placeholder="Makes chai that resolves minor conflicts."
+                    placeholder="Three swords, zero sense of direction. Carries groceries uphill."
                     maxLength={140}
                   />
                 </Field>

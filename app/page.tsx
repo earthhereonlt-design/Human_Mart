@@ -37,7 +37,7 @@ export default async function LandingPage() {
               <p className="hand mt-4 text-lg text-ink-mute">— "how this works," in 3 panels</p>
               <CreatureScene
                 mood="waiting"
-                caption="Aadi — The Founder"
+                caption="Luffy — The Founder"
                 className="mt-8 max-w-72"
               />
             </div>

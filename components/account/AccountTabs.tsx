@@ -189,6 +189,31 @@ export function AccountTabs({
             <Button variant="outline" className="mt-8" onClick={signOut}>
               <LogOut size={14} /> Sign out
             </Button>
+
+            <div className="mt-10 border-2 border-clay/50 bg-clay-tint/40 p-5">
+              <p className="headline text-lg text-clay-deep">Danger zone</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-mute">
+                Delete your account forever. Your reviews and orders are erased;
+                the humans you listed stay on their shelves, unclaimed.
+              </p>
+              <Button
+                variant="outline"
+                className="mt-4 !border-clay !text-clay-deep hover:!shadow-[3px_3px_0_var(--color-clay)]"
+                onClick={async () => {
+                  if (!window.confirm("Delete your account forever? This cannot be undone.")) return;
+                  const supabase = createClient();
+                  const { error } = await supabase.rpc("delete_own_account");
+                  if (error) {
+                    window.alert("Could not delete the account — try again in a minute.");
+                    return;
+                  }
+                  await supabase.auth.signOut();
+                  window.location.href = "/";
+                }}
+              >
+                <Trash2 size={14} /> Delete my account
+              </Button>
+            </div>
           </motion.div>
         )}
         </AnimatePresence>

@@ -252,3 +252,232 @@ create policy "photos authenticated upload" on storage.objects
   for insert to authenticated with check (bucket_id = 'photos');
 create policy "photos owner delete" on storage.objects
   for delete to authenticated using (bucket_id = 'photos' and owner = auth.uid());
+
+-- ============================================================
+-- ADMIN + ACCOUNT DELETION + SITE SETTINGS
+-- (append-only section — safe to re-run)
+-- ============================================================
+
+-- admins
+alter table public.profiles add column if not exists is_admin boolean not null default false;
+
+-- bootstrap the first admin (the repo owner's account) if none exists yet
+update public.profiles
+set is_admin = true
+where email = 'earthhereonlt@gmail.com'
+  and not exists (select 1 from public.profiles where is_admin);
+
+-- only admins may flip the flag — blocks self-promotion through normal updates
+create or replace function public.guard_profile_update()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.is_admin is distinct from old.is_admin
+     and not coalesce((select p.is_admin from public.profiles p where p.id = auth.uid()), false) then
+    raise exception 'The admin stamp is granted, never taken';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_guard on public.profiles;
+create trigger profiles_guard
+  before update on public.profiles
+  for each row execute procedure public.guard_profile_update();
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce((select p.is_admin from public.profiles p where p.id = auth.uid()), false);
+$$;
+
+-- ------------------------------------------------------------
+-- SITE SETTINGS — powers maintenance mode; public read, admin write
+-- ------------------------------------------------------------
+create table if not exists public.site_settings (
+  key        text primary key,
+  value      jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.site_settings enable row level security;
+
+drop policy if exists "settings readable" on public.site_settings;
+drop policy if exists "settings admin insert" on public.site_settings;
+drop policy if exists "settings admin update" on public.site_settings;
+create policy "settings readable" on public.site_settings for select using (true);
+create policy "settings admin insert" on public.site_settings for insert to authenticated with check (public.is_admin());
+create policy "settings admin update" on public.site_settings for update to authenticated using (public.is_admin());
+
+-- ------------------------------------------------------------
+-- ACCOUNT DELETION — a user can erase themselves (cascades cleanly)
+-- ------------------------------------------------------------
+create or replace function public.delete_own_account()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then raise exception 'Sign in first'; end if;
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
+-- ------------------------------------------------------------
+-- ADMIN OPERATIONS — each checks the admin stamp server-side
+-- ------------------------------------------------------------
+create or replace function public.admin_delete_user(target uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then raise exception 'Admins only'; end if;
+  if target = auth.uid() then raise exception 'Use account deletion for yourself'; end if;
+  delete from auth.users where id = target;
+end;
+$$;
+
+create or replace function public.admin_set_listing_active(p_id uuid, p_active boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then raise exception 'Admins only'; end if;
+  update public.listings set is_active = p_active where listings.id = p_id;
+end;
+$$;
+
+create or replace function public.admin_delete_listing(p_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then raise exception 'Admins only'; end if;
+  delete from public.listings where listings.id = p_id;
+end;
+$$;
+
+create or replace function public.admin_delete_person(p_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then raise exception 'Admins only'; end if;
+  delete from public.people where people.id = p_id;
+end;
+$$;
+
+create or replace function public.admin_set_admin(target uuid, make_admin boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then raise exception 'Admins only'; end if;
+  if target = auth.uid() and not make_admin then
+    raise exception 'Another admin must remove your access — keeps you locked out safely';
+  end if;
+  update public.profiles set is_admin = make_admin where id = target;
+end;
+$$;
+
+-- everything the panel needs, in one admin-gated call
+create or replace function public.admin_snapshot()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'listings', (select coalesce(jsonb_agg(t) from (
+        select id, title, price, unit, category, is_active, created_at,
+               person_name, person_slug
+        from public.market_listings order by created_at desc limit 200) t)),
+    'people', (select coalesce(jsonb_agg(t) from (
+        select id, name, slug, photo_url, created_at
+        from public.people order by created_at desc limit 200) t)),
+    'users', (select coalesce(jsonb_agg(t) from (
+        select id, display_name, email, is_admin, created_at
+        from public.profiles order by created_at desc limit 200) t)),
+    'orders', (select coalesce(jsonb_agg(t) from (
+        select id, buyer_id, items, totals, payment_method, created_at
+        from public.orders order by created_at desc limit 100) t)),
+    'stats', jsonb_build_object(
+        'humans', (select count(*) from public.people),
+        'listings', (select count(*) from public.listings),
+        'users', (select count(*) from public.profiles),
+        'orders', (select count(*) from public.orders),
+        'reviews', (select count(*) from public.reviews))
+  );
+$$;
+
+-- maintenance switch — on: requires minutes (1..30 days); off: clears it
+create or replace function public.set_maintenance(on_off boolean, minutes int, note text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  existing jsonb;
+  new_value jsonb;
+begin
+  if not public.is_admin() then raise exception 'Admins only'; end if;
+
+  select value into existing from public.site_settings where key = 'maintenance';
+
+  if on_off then
+    if minutes is null or minutes < 1 or minutes > 43200 then
+      raise exception 'Pick a duration between 1 minute and 30 days';
+    end if;
+    new_value := jsonb_build_object(
+      'on', true,
+      'ends_at', now() + (minutes || ' minutes')::interval,
+      'note', coalesce(nullif(trim(note), ''), 'Restocking the shelves. Back soon!')
+    );
+  else
+    new_value := coalesce(existing, '{}'::jsonb) || jsonb_build_object('on', false, 'ends_at', null);
+  end if;
+
+  insert into public.site_settings (key, value, updated_at)
+  values ('maintenance', new_value, now())
+  on conflict (key) do update set value = excluded.value, updated_at = excluded.updated_at;
+
+  return new_value;
+end;
+$$;
+
+revoke all on function public.delete_own_account() from anon, public;
+revoke all on function public.admin_delete_user(uuid) from anon, public;
+revoke all on function public.admin_set_listing_active(uuid, boolean) from anon, public;
+revoke all on function public.admin_delete_listing(uuid) from anon, public;
+revoke all on function public.admin_delete_person(uuid) from anon, public;
+revoke all on function public.admin_set_admin(uuid, boolean) from anon, public;
+revoke all on function public.admin_snapshot() from anon, public;
+revoke all on function public.set_maintenance(boolean, int, text) from anon, public;
+grant execute on function public.delete_own_account() to authenticated;
+grant execute on function public.admin_delete_user(uuid) to authenticated;
+grant execute on function public.admin_set_listing_active(uuid, boolean) to authenticated;
+grant execute on function public.admin_delete_listing(uuid) to authenticated;
+grant execute on function public.admin_delete_person(uuid) to authenticated;
+grant execute on function public.admin_set_admin(uuid, boolean) to authenticated;
+grant execute on function public.admin_snapshot() to authenticated;
+grant execute on function public.set_maintenance(boolean, int, text) to authenticated;
