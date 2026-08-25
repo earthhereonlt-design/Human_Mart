@@ -7,6 +7,7 @@ import { IntroCurtain } from "@/components/manga/IntroCurtain";
 import { PageTurnWipe } from "@/components/manga/PageTurnWipe";
 import { Bookmark } from "@/components/manga/Bookmark";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const dela = Dela_Gothic_One({
   weight: "400",
@@ -103,6 +104,7 @@ export default async function RootLayout({
         <IntroCurtain />
         <PageTurnWipe />
         <Bookmark />
+        <SpeedInsights />
       </body>
     </html>
   );
