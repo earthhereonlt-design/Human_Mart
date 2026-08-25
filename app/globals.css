@@ -30,6 +30,20 @@
   --text-eyebrow: 0.6875rem;
   --tracking-eyebrow: 0.22em;
 
+  /* ——— fluid display scale ———
+     Discrete md: steps left every heading frozen from 768px upward, so a
+     1440px laptop was reading tablet-sized type. These interpolate instead.
+     Each curve is tuned to land on the current mobile size at 375px and grow
+     from there, so nothing shrinks on a phone. Emitted as real utilities:
+     text-display, text-h1, text-h2, text-h3, text-initial.
+     Only use these where the container tracks the viewport — inside a
+     fixed-width modal or panel, vw-based type is the wrong instrument. */
+  --text-display: clamp(1.875rem, 1.1rem + 2.9vw, 3.75rem); /* 30 → 60 */
+  --text-h1: clamp(2.25rem, 1.81rem + 1.88vw, 3.5rem); /* 36 → 56 */
+  --text-h2: clamp(1.75rem, 1.525rem + 1.22vw, 2.75rem); /* 28 → 44 */
+  --text-h3: clamp(1.25rem, 1.075rem + 0.75vw, 1.75rem); /* 20 → 28 */
+  --text-initial: clamp(2.5rem, 1.6rem + 4.2vw, 4.5rem); /* 40 → 72 */
+
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -37,6 +51,10 @@ html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
+  /* safety net: a stray wide child scrolls itself, never the whole document.
+     `clip` rather than `hidden` — and on html rather than body — so the
+     sticky header keeps working. */
+  overflow-x: clip;
 }
 
 /* buttons & links: no double-tap zoom delay, no text-selection drag */
@@ -76,6 +94,12 @@ body {
 @media (min-width: 768px) {
   .container-page {
     padding-inline: 2.5rem;
+  }
+}
+/* laptops: the 76rem column otherwise sits 32px from each edge at 1280px */
+@media (min-width: 1280px) {
+  .container-page {
+    padding-inline: 4rem;
   }
 }
 
@@ -701,6 +725,11 @@ html {
   0% { transform: scale(0.4) rotate(-14deg); opacity: 0; }
   60% { transform: scale(1.12) rotate(-2deg); opacity: 1; }
   100% { transform: scale(1) rotate(-4deg); opacity: 1; }
+}
+
+/* ——— maintenance takeover — the closed sign replaces the whole shop ——— */
+body:has(#maintenance-screen) > :not(#main) {
+  display: none !important;
 }
 
 /* marquee fades at the edges like it runs off the page */

@@ -30,7 +30,10 @@ export default async function AdminPage() {
   ]);
   if (snapErr || !snapRes) notFound();
 
-  const maintenance = (settings?.value ?? { on: false, ends_at: null, note: null }) as Maintenance;
+  const raw = (settings?.value ?? { on: false, ends_at: null, note: null }) as Maintenance;
+  // expired maintenance is as good as off — the toggle must not claim "closed"
+  const stillRunning = Boolean(raw.on && raw.ends_at && new Date(raw.ends_at) > new Date());
+  const maintenance: Maintenance = { ...raw, on: stillRunning };
 
   return (
     <div className="container-page py-10 md:py-20">

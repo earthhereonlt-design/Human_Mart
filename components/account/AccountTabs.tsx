@@ -4,13 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, EyeOff, LogOut, Trash2 } from "lucide-react";
+import { Eye, EyeOff, LogOut, Pencil, Trash2 } from "lucide-react";
 import { setListingActive, deleteListing } from "@/app/actions";
 import { createClient } from "@/lib/supabase/client";
 import { formatINR, formatDate, cn } from "@/lib/utils";
 import { springSoft } from "@/lib/motion";
 import type { MarketListing, OrderRow, Profile } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
+import { EditListingModal } from "@/components/list/EditListingModal";
+import { EditPersonModal, type EditablePerson } from "@/components/person/EditPersonModal";
 
 type Tab = "listings" | "orders" | "profile";
 
@@ -23,11 +25,13 @@ export function AccountTabs({
   profile: Profile;
   myListings: MarketListing[];
   orders: OrderRow[];
-  myPeople: Array<{ id: string; name: string; slug: string }>;
+  myPeople: EditablePerson[];
 }) {
   const [tab, setTab] = useState<Tab>("listings");
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
+  const [editing, setEditing] = useState<MarketListing | null>(null);
+  const [editingPerson, setEditingPerson] = useState<EditablePerson | null>(null);
 
   const signOut = async () => {
     const supabase = createClient();
@@ -39,7 +43,7 @@ export function AccountTabs({
   return (
     <div>
       {/* tab bar */}
-      <div className="flex gap-6 border-b border-sand" role="tablist">
+      <div className="flex gap-5 overflow-x-auto border-b border-sand md:gap-6" role="tablist">
         {(
           [
             ["listings", `My listings (${myListings.length})`],
@@ -53,7 +57,7 @@ export function AccountTabs({
             aria-selected={tab === id}
             onClick={() => setTab(id)}
             className={cn(
-              "-mb-px border-b-2 pb-3 text-[11px] font-medium uppercase tracking-[0.14em] transition-colors",
+              "-mb-px shrink-0 whitespace-nowrap border-b-2 pb-3 text-[11px] font-medium uppercase tracking-[0.14em] transition-colors",
               tab === id
                 ? "border-ink text-ink"
                 : "border-transparent text-ink-faint hover:text-ink-mute"
@@ -79,7 +83,7 @@ export function AccountTabs({
                 {myListings.map((l) => (
                   <li key={l.id} className="flex flex-wrap items-center gap-4 py-5">
                     <div className="min-w-0 flex-1">
-                      <Link href={`/listing/${l.id}`} className="link-editorial headline text-lg">
+                      <Link href={`/listing/${l.id}`} className="link-editorial headline break-words text-lg">
                         {l.person_name} — {l.title}
                       </Link>
                       <p className="mt-1 text-sm text-ink-mute">
@@ -90,6 +94,13 @@ export function AccountTabs({
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditing(l)}
+                      >
+                        <Pencil size={13} /> Edit
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"
@@ -130,32 +141,44 @@ export function AccountTabs({
                   Nobody yet — every human you list an offering for appears here.
                 </p>
               ) : (
-                <ul className="mt-3 divide-y divide-sand border-y border-sand">
-                  {myPeople.map((p) => (
-                    <li key={p.id} className="flex items-center gap-3 py-3.5">
-                      <Link href={`/person/${p.slug}`} className="link-editorial headline text-base">
-                        {p.name}
-                      </Link>
-                      <span className="flex-1" />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        loading={busy === `pp-${p.id}`}
-                        onClick={async () => {
-                          if (!window.confirm(`Take ${p.name} off the shelf? All their listings go too.`)) return;
-                          setBusy(`pp-${p.id}`);
-                          const supabase = createClient();
-                          const { error } = await supabase.from("people").delete().eq("id", p.id);
-                          setBusy(null);
-                          if (error) window.alert("Could not remove them — try again.");
-                          else router.refresh();
-                        }}
-                      >
-                        <Trash2 size={13} /> Remove
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <p className="mt-2 text-xs text-ink-faint">
+                    Their name, bio and photo are shared by all of their offerings.
+                  </p>
+                  <ul className="mt-3 divide-y divide-sand border-y border-sand">
+                    {myPeople.map((p) => (
+                      <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-3.5">
+                        <Link
+                          href={`/person/${p.slug}`}
+                          className="link-editorial headline min-w-0 break-words text-base"
+                        >
+                          {p.name}
+                        </Link>
+                        <div className="ml-auto flex shrink-0 items-center gap-2">
+                          <Button variant="outline" size="sm" onClick={() => setEditingPerson(p)}>
+                            <Pencil size={13} /> Edit
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            loading={busy === `pp-${p.id}`}
+                            onClick={async () => {
+                              if (!window.confirm(`Take ${p.name} off the shelf? All their listings go too.`)) return;
+                              setBusy(`pp-${p.id}`);
+                              const supabase = createClient();
+                              const { error } = await supabase.from("people").delete().eq("id", p.id);
+                              setBusy(null);
+                              if (error) window.alert("Could not remove them — try again.");
+                              else router.refresh();
+                            }}
+                          >
+                            <Trash2 size={13} /> Remove
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </>
               )}
             </div>
           </motion.div>
@@ -255,6 +278,30 @@ export function AccountTabs({
         )}
         </AnimatePresence>
       </div>
+
+      {editing && (
+        <EditListingModal
+          listing={{
+            id: editing.id,
+            title: editing.title,
+            description: editing.description,
+            price: editing.price,
+            unit: editing.unit,
+            category: editing.category,
+            tags: editing.tags,
+            availability: editing.availability,
+            person_name: editing.person_name,
+          }}
+          onClose={() => setEditing(null)}
+        />
+      )}
+
+      {editingPerson && (
+        <EditPersonModal
+          person={editingPerson}
+          onClose={() => setEditingPerson(null)}
+        />
+      )}
     </div>
   );
 }

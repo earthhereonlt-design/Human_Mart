@@ -61,7 +61,7 @@ function CheckoutInner() {
   if (lines.length === 0) {
     return (
       <div className="container-page py-10 md:py-20">
-        <h1 className="headline text-4xl">Address</h1>
+        <h1 className="headline text-h1">Address</h1>
         <div className="mt-6">
           <EmptyState
             mood="curious"

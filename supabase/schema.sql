@@ -258,6 +258,60 @@ create policy "photos authenticated upload" on storage.objects
 create policy "photos owner delete" on storage.objects
   for delete to authenticated using (bucket_id = 'photos' and owner = auth.uid());
 
+-- ------------------------------------------------------------
+-- LISTING SLUGS — pretty URLs like /listing/ansh (then ansh-2, -3 …)
+-- backfills existing rows from the person's slug, deduplicated
+-- ------------------------------------------------------------
+alter table public.listings add column if not exists slug text;
+create unique index if not exists listings_slug_key on public.listings (slug) where slug is not null;
+
+with numbered as (
+  select l.id,
+         p.slug as base,
+         row_number() over (partition by p.slug order by l.created_at) as rn
+  from public.listings l
+  join public.people p on p.id = l.person_id
+  where l.slug is null
+)
+update public.listings l
+set slug = n.base || case when n.rn > 1 then '-' || n.rn else '' end
+from numbered n
+where l.id = n.id
+  and not exists (
+    select 1 from public.listings o
+    where o.slug = n.base || case when n.rn > 1 then '-' || n.rn else '' end
+      and o.id <> l.id
+  );
+
+-- expose the slug through the market view (slug appended — CREATE OR REPLACE
+-- only allows new columns at the end)
+create or replace view public.market_listings as
+select
+  l.id,
+  l.person_id,
+  l.title,
+  l.description,
+  l.price,
+  l.unit,
+  l.category,
+  l.tags,
+  l.availability,
+  l.is_active,
+  l.created_at,
+  p.name     as person_name,
+  p.slug     as person_slug,
+  p.photo_url as person_photo_url,
+  p.claimed_by is not null as person_claimed,
+  coalesce(r.avg_rating, 0) as avg_rating,
+  coalesce(r.review_count, 0) as review_count,
+  l.slug
+from public.listings l
+join public.people p on p.id = l.person_id
+left join (
+  select listing_id, avg(rating) as avg_rating, count(*) as review_count
+  from public.reviews group by listing_id
+) r on r.listing_id = l.id;
+
 -- ============================================================
 -- ADMIN + ACCOUNT DELETION + SITE SETTINGS
 -- (append-only section — safe to re-run)
@@ -273,6 +327,7 @@ where email = 'earthhereonlt@gmail.com'
   and not exists (select 1 from public.profiles where is_admin);
 
 -- only admins may flip the flag — blocks self-promotion through normal updates
+-- (direct SQL-editor sessions have no auth.uid() and are trusted)
 create or replace function public.guard_profile_update()
 returns trigger
 language plpgsql
@@ -281,6 +336,7 @@ set search_path = public
 as $$
 begin
   if new.is_admin is distinct from old.is_admin
+     and auth.uid() is not null
      and not coalesce((select p.is_admin from public.profiles p where p.id = auth.uid()), false) then
     raise exception 'The admin stamp is granted, never taken';
   end if;
@@ -292,6 +348,48 @@ drop trigger if exists profiles_guard on public.profiles;
 create trigger profiles_guard
   before update on public.profiles
   for each row execute procedure public.guard_profile_update();
+
+-- ------------------------------------------------------------
+-- PEOPLE GUARD — RLS is row-level and cannot restrict columns.
+-- The "people update" policy lets a creator/claimer update their row, which
+-- via PostgREST means they can send ANY column — including slug, created_by
+-- and claimed_by. This trigger is what actually makes "only admins move a
+-- URL" true; the server action's check is just a nicer error message.
+-- (direct SQL-editor sessions have no auth.uid() and are trusted)
+-- ------------------------------------------------------------
+create or replace function public.guard_person_update()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  caller_is_admin boolean := coalesce(
+    (select p.is_admin from public.profiles p where p.id = auth.uid()), false);
+begin
+  if auth.uid() is null or caller_is_admin then
+    return new;
+  end if;
+
+  if new.slug is distinct from old.slug then
+    raise exception 'Only an editor can move a human''s URL';
+  end if;
+
+  -- ownership is not self-serve: claiming has its own flow, and rewriting
+  -- created_by would hand the row to someone else
+  if new.created_by is distinct from old.created_by
+     or new.claimed_by is distinct from old.claimed_by then
+    raise exception 'Ownership of a listing cannot be reassigned this way';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists people_guard on public.people;
+create trigger people_guard
+  before update on public.people
+  for each row execute procedure public.guard_person_update();
 
 create or replace function public.is_admin()
 returns boolean
@@ -388,6 +486,84 @@ begin
 end;
 $$;
 
+-- admin rewrite of a listing — offering fields only.
+-- the human's name/bio/photo/slug live on `people` and are shared by every
+-- listing that person has, so they are edited through admin_update_person
+-- instead. dropping the old 11-arg form first: create-or-replace cannot
+-- change a function's signature.
+drop function if exists public.admin_update_listing(
+  uuid, text, text, integer, text, text, text[], text, text, text, text
+);
+
+create or replace function public.admin_update_listing(
+  p_listing_id uuid,
+  p_title text,
+  p_description text,
+  p_price integer,
+  p_unit text,
+  p_category text,
+  p_tags text[],
+  p_availability text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then raise exception 'Admins only'; end if;
+
+  update public.listings set
+    title = p_title,
+    description = p_description,
+    price = p_price,
+    unit = p_unit,
+    category = p_category,
+    tags = p_tags,
+    availability = p_availability
+  where listings.id = p_listing_id;
+
+  if not found then raise exception 'That listing no longer exists'; end if;
+end;
+$$;
+
+-- admin rewrite of a human. unlike the owner path (plain RLS update), admins
+-- may also move the slug — so the unique constraint is checked up front to
+-- turn a raw 23505 into something the UI can show.
+create or replace function public.admin_update_person(
+  p_id uuid,
+  p_name text,
+  p_slug text,
+  p_bio text,
+  p_photo_url text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then raise exception 'Admins only'; end if;
+
+  if p_slug is null or p_slug !~ '^[a-z0-9]+(-[a-z0-9]+)*$' then
+    raise exception 'A URL may only use lowercase letters, numbers and single hyphens';
+  end if;
+
+  if exists (select 1 from public.people where slug = p_slug and id <> p_id) then
+    raise exception 'The URL /%  is already taken by another human', p_slug;
+  end if;
+
+  update public.people set
+    name = p_name,
+    slug = p_slug,
+    bio = p_bio,
+    photo_url = p_photo_url
+  where people.id = p_id;
+
+  if not found then raise exception 'That human is no longer on the shelf'; end if;
+end;
+$$;
+
 create or replace function public.admin_set_admin(target uuid, make_admin boolean)
 returns void
 language plpgsql
@@ -413,11 +589,13 @@ set search_path = public
 as $$
   select jsonb_build_object(
     'listings', (select coalesce(jsonb_agg(t), '[]'::jsonb) from (
-        select id, title, price, unit, category, is_active, created_at,
-               person_name, person_slug
+        select id, title, description, price, unit, category, tags, availability,
+               is_active, created_at, person_id,
+               person_name, person_slug, person_photo_url,
+               (select p.bio from public.people p where p.id = market_listings.person_id) as person_bio
         from public.market_listings order by created_at desc limit 200) t),
     'people', (select coalesce(jsonb_agg(t), '[]'::jsonb) from (
-        select id, name, slug, photo_url, created_at
+        select id, name, slug, bio, photo_url, created_at
         from public.people order by created_at desc limit 200) t),
     'users', (select coalesce(jsonb_agg(t), '[]'::jsonb) from (
         select id, display_name, email, is_admin, created_at
@@ -475,6 +653,8 @@ revoke all on function public.admin_delete_user(uuid) from anon, public;
 revoke all on function public.admin_set_listing_active(uuid, boolean) from anon, public;
 revoke all on function public.admin_delete_listing(uuid) from anon, public;
 revoke all on function public.admin_delete_person(uuid) from anon, public;
+revoke all on function public.admin_update_listing(uuid, text, text, integer, text, text, text[], text) from anon, public;
+revoke all on function public.admin_update_person(uuid, text, text, text, text) from anon, public;
 revoke all on function public.admin_set_admin(uuid, boolean) from anon, public;
 revoke all on function public.admin_snapshot() from anon, public;
 revoke all on function public.set_maintenance(boolean, int, text) from anon, public;
@@ -483,6 +663,8 @@ grant execute on function public.admin_delete_user(uuid) to authenticated;
 grant execute on function public.admin_set_listing_active(uuid, boolean) to authenticated;
 grant execute on function public.admin_delete_listing(uuid) to authenticated;
 grant execute on function public.admin_delete_person(uuid) to authenticated;
+grant execute on function public.admin_update_listing(uuid, text, text, integer, text, text, text[], text) to authenticated;
+grant execute on function public.admin_update_person(uuid, text, text, text, text) to authenticated;
 grant execute on function public.admin_set_admin(uuid, boolean) to authenticated;
 grant execute on function public.admin_snapshot() to authenticated;
 grant execute on function public.set_maintenance(boolean, int, text) to authenticated;

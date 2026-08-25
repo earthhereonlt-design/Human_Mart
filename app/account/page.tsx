@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import type { MarketListing, OrderRow, Profile } from "@/lib/types";
 import { AccountTabs } from "@/components/account/AccountTabs";
+import type { EditablePerson } from "@/components/person/EditPersonModal";
 import { ChapterMark } from "@/components/manga/ChapterCard";
 
 export const metadata: Metadata = { title: "Your account" };
@@ -43,7 +44,7 @@ export default async function AccountPage() {
       .order("created_at", { ascending: false }),
     supabase
       .from("people")
-      .select("id, name, slug")
+      .select("id, name, slug, bio, photo_url")
       .eq("created_by", user.id)
       .order("created_at", { ascending: false }),
   ]);
@@ -60,13 +61,13 @@ export default async function AccountPage() {
 
   const myListings = (listingsRes.data ?? []) as MarketListing[];
   const orders = (ordersRes.data ?? []) as OrderRow[];
-  const myPeople = (peopleRes.data ?? []) as Array<{ id: string; name: string; slug: string }>;
+  const myPeople = (peopleRes.data ?? []) as EditablePerson[];
 
   return (
     <div className="container-page py-10 md:py-20">
       <ChapterMark jp="第7話" className="mb-6" />
       <span className="eyebrow">Signed in as {profile.email}</span>
-      <h1 className="headline mt-3 text-4xl md:text-5xl">{profile.display_name}</h1>
+      <h1 className="headline mt-3 break-words text-h1">{profile.display_name}</h1>
 
       <div className="mt-12">
         <AccountTabs profile={profile} myListings={myListings} orders={orders} myPeople={myPeople} />

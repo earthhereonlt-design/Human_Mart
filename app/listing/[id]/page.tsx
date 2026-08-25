@@ -56,9 +56,12 @@ export default async function ListingPage({ params }: PageProps) {
 
       <ChapterMark jp="読切" className="mt-5" />
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+      {/* the photo column is pinned rather than fluid — a 1.1fr sibling left
+          this 4/5 portrait 638px tall on a 1280px laptop, and 860px on a
+          tablet, where the layout is still one column */}
+      <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,380px)_1fr] lg:gap-14">
         {/* photo */}
-        <div className="border border-sand bg-parchment">
+        <div className="w-full max-w-[420px] border border-sand bg-parchment lg:max-w-none">
           <div className="aspect-[4/5] w-full">
             {listing.person_photo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -69,17 +72,17 @@ export default async function ListingPage({ params }: PageProps) {
               />
             ) : (
               <div className="grid h-full w-full place-items-center">
-                <span className="headline text-7xl text-stone">{initials(listing.person_name)}</span>
+                <span className="headline text-initial text-stone">{initials(listing.person_name)}</span>
               </div>
             )}
           </div>
         </div>
 
         {/* details */}
-        <div className="flex flex-col">
+        <div className="flex min-w-0 flex-col">
           <span className="eyebrow">{listing.category}</span>
 
-          <h1 className="headline mt-3 text-3xl md:text-4xl">
+          <h1 className="headline mt-3 text-h1">
             <Link href={`/person/${listing.person_slug}`} className="hover:text-clay transition-colors">
               {listing.person_name}
             </Link>
@@ -172,7 +175,7 @@ export default async function ListingPage({ params }: PageProps) {
         <div className="grid gap-10 lg:grid-cols-[1fr_1.6fr] lg:gap-16">
           <div>
             <span className="eyebrow">Word of mouth</span>
-            <h2 className="headline mt-3 text-3xl">Reviews</h2>
+            <h2 className="headline mt-3 text-h2">Reviews</h2>
             <p className="mt-3 text-sm text-ink-mute">
               {listing.review_count === 0
                 ? "No reviews yet. History awaits its first witness."
@@ -208,8 +211,8 @@ export default async function ListingPage({ params }: PageProps) {
       {/* related */}
       {related.length > 0 && (
         <section className="mt-20 border-t border-sand pt-14 md:mt-28">
-          <div className="flex items-end justify-between">
-            <h2 className="headline text-3xl">You may also need</h2>
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+            <h2 className="headline text-h2">You may also need</h2>
             <Link
               href={`/explore?category=${encodeURIComponent(listing.category)}`}
               className="link-editorial text-[11px] font-medium uppercase tracking-[0.16em] text-ink-mute"

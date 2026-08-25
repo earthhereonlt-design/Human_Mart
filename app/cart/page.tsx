@@ -48,7 +48,7 @@ function CartInner() {
       ) : (
         <div className="mt-10 grid gap-12 lg:grid-cols-[1.6fr_1fr] lg:gap-16">
           {/* lines */}
-          <ul className="divide-y divide-sand border-y border-sand">
+          <ul className="min-w-0 divide-y divide-sand border-y border-sand">
             <AnimatePresence initial={false}>
               {lines.map((l) => (
                 <motion.li
@@ -74,13 +74,13 @@ function CartInner() {
                     )}
                   </Link>
 
-                  <div className="flex flex-1 flex-col justify-between gap-3">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
+                  <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
                         <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-ink-faint">
                           {l.personName}
                         </p>
-                        <Link href={`/listing/${l.listingId}`} className="link-editorial headline text-lg">
+                        <Link href={`/listing/${l.listingId}`} className="link-editorial headline break-words text-lg">
                           {l.title}
                         </Link>
                         <p className="mt-1 text-sm tabular-nums text-ink-mute">
@@ -91,13 +91,15 @@ function CartInner() {
                         type="button"
                         aria-label={`Remove ${l.title} from cart`}
                         onClick={() => remove(l.listingId)}
-                        className="grid h-8 w-8 place-items-center text-ink-faint transition-colors hover:text-clay-deep"
+                        className="grid h-8 w-8 shrink-0 place-items-center text-ink-faint transition-colors hover:text-clay-deep"
                       >
                         <X size={15} strokeWidth={1.5} />
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    {/* wraps — a long unit ("consultation") widens the stepper
+                        past the room left beside the thumbnail on a phone */}
+                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                       <QtyStepper
                         value={l.qty}
                         onChange={(v) => setQty(l.listingId, v)}

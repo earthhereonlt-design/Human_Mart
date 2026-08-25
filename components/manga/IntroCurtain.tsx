@@ -58,7 +58,7 @@ export function IntroCurtain() {
         <div className="speedlines absolute inset-0 opacity-25" />
         <div className="halftone absolute inset-0" />
         <div className="relative flex h-full flex-col items-center justify-center gap-4 text-center">
-          <span className="jp text-6xl font-bold tracking-[0.2em] text-ink md:text-7xl">第一話</span>
+          <span className="jp text-[clamp(2.5rem,15vw,3.75rem)] font-bold tracking-[0.2em] text-ink md:text-7xl">第一話</span>
           <span className="h-0.5 w-24 bg-clay" aria-hidden="true" />
           <p className="hand text-xl text-ink-mute">the story begins…</p>
         </div>
@@ -123,7 +123,7 @@ export function IntroCurtain() {
           >
             人
           </motion.span>
-          <motion.h1 variants={slamIn} className="headline text-5xl md:text-7xl">
+          <motion.h1 variants={slamIn} className="headline text-[clamp(2rem,9vw,3rem)] md:text-7xl">
             Human Mart
           </motion.h1>
           <motion.div

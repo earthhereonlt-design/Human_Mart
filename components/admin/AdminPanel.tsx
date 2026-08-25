@@ -7,14 +7,18 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Countdown } from "@/components/manga/Countdown";
 import { Button } from "@/components/ui/Button";
-import { Eye, EyeOff, Loader2, Trash2 } from "lucide-react";
+import { EditListingModal, type EditableListing } from "@/components/list/EditListingModal";
+import { EditPersonModal, type EditablePerson } from "@/components/person/EditPersonModal";
+import { Eye, EyeOff, Loader2, Pencil, Trash2 } from "lucide-react";
 
+// admin_snapshot() already returns every field the editors need — keep them all
 type Snap = {
   listings: Array<{
-    id: string; title: string; price: number; unit: string; category: string;
-    is_active: boolean; person_name: string; person_slug: string;
+    id: string; title: string; description: string | null; price: number; unit: string;
+    category: string; tags: string[]; availability: string | null;
+    is_active: boolean; person_id: string; person_name: string; person_slug: string;
   }>;
-  people: Array<{ id: string; name: string; slug: string }>;
+  people: Array<{ id: string; name: string; slug: string; bio: string | null; photo_url: string | null }>;
   users: Array<{ id: string; display_name: string; email: string | null; is_admin: boolean }>;
   orders: Array<{ id: string; payment_method: string; totals: { total: number }; items: unknown[]; created_at: string }>;
   stats: { humans: number; listings: number; users: number; orders: number; reviews: number };
@@ -50,6 +54,8 @@ export function AdminPanel({
 
   const [busy, startTransition] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [editingListing, setEditingListing] = useState<EditableListing | null>(null);
+  const [editingPerson, setEditingPerson] = useState<EditablePerson | null>(null);
 
   const run = async (id: string, fn: () => PromiseLike<{ error: { message: string } | null }>, confirmText?: string) => {
     if (confirmText && !window.confirm(confirmText)) return;
@@ -220,6 +226,22 @@ export function AdminPanel({
                   </p>
                 </div>
                 <Button
+                  variant="outline" size="sm"
+                  onClick={() => setEditingListing({
+                    id: l.id,
+                    title: l.title,
+                    description: l.description,
+                    price: l.price,
+                    unit: l.unit,
+                    category: l.category,
+                    tags: l.tags ?? [],
+                    availability: l.availability,
+                    person_name: l.person_name,
+                  })}
+                >
+                  <Pencil size={13} /> Edit
+                </Button>
+                <Button
                   variant="outline" size="sm" loading={busyId === `l-${l.id}`}
                   onClick={() => run(`l-${l.id}`, () => supabase.rpc("admin_set_listing_active", { p_id: l.id, p_active: !l.is_active }))}
                 >
@@ -245,6 +267,9 @@ export function AdminPanel({
                   <Link href={`/person/${p.slug}`} className="link-editorial headline text-base">{p.name}</Link>
                   <p className="text-xs text-ink-mute">/{p.slug}</p>
                 </div>
+                <Button variant="outline" size="sm" onClick={() => setEditingPerson(p)}>
+                  <Pencil size={13} /> Edit
+                </Button>
                 <Button
                   variant="ghost" size="sm" loading={busyId === `p-${p.id}`}
                   onClick={() => run(`p-${p.id}`, () => supabase.rpc("admin_delete_person", { p_id: p.id }), `Delete ${p.name} and all their listings?`)}
@@ -306,6 +331,13 @@ export function AdminPanel({
           </ul>
         )}
       </div>
+
+      {editingListing && (
+        <EditListingModal listing={editingListing} onClose={() => setEditingListing(null)} />
+      )}
+      {editingPerson && (
+        <EditPersonModal person={editingPerson} isAdmin onClose={() => setEditingPerson(null)} />
+      )}
     </div>
   );
 }

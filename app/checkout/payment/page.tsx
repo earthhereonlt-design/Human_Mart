@@ -55,7 +55,7 @@ function PaymentInner() {
   if (lines.length === 0 && phase === "form") {
     return (
       <div className="container-page py-10 md:py-20">
-        <h1 className="headline text-4xl">Payment</h1>
+        <h1 className="headline text-h1">Payment</h1>
         <div className="mt-6">
           <EmptyState
             mood="curious"

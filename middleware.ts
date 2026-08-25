@@ -60,8 +60,11 @@ export async function middleware(request: NextRequest) {
         { headers: { apikey: key, Authorization: `Bearer ${key}` } }
       );
       if (res.ok) {
-        const rows = (await res.json()) as Array<{ value?: { on?: boolean } }>;
-        if (rows[0]?.value?.on) {
+        const rows = (await res.json()) as Array<{ value?: { on?: boolean; ends_at?: string | null } }>;
+        const m = rows[0]?.value;
+        // expired maintenance counts as off — the site reopens by itself
+        const endsAt = m?.ends_at ? new Date(m.ends_at) : null;
+        if (m?.on && endsAt && endsAt.getTime() > Date.now()) {
           let isAdmin = false;
           if (user) {
             const { data: profile } = await supabase

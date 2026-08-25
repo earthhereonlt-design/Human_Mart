@@ -31,7 +31,7 @@ export function ChapterCard({
         <Kicker jp={jp} />
         <span className="rule-draw h-0.5 flex-1 bg-ink/25" aria-hidden="true" />
       </div>
-      <h1 className="headline mt-4 text-3xl md:text-5xl">
+      <h1 className="headline mt-4 text-display">
         <SplitTitle text={title} />
       </h1>
       {sub && <p className="hand mt-2 text-lg text-ink-mute">{sub}</p>}

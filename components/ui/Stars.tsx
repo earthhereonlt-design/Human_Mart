@@ -26,8 +26,8 @@ export function Stars({
   className?: string;
 }) {
   return (
-    <span className={cn("inline-flex items-center gap-1.5", className)}>
-      <span className="inline-flex items-center gap-0.5" aria-hidden="true">
+    <span className={cn("inline-flex min-w-0 max-w-full items-center gap-1.5", className)}>
+      <span className="inline-flex shrink-0 items-center gap-0.5" aria-hidden="true">
         {[1, 2, 3, 4, 5].map((i) => (
           <motion.span
             key={i}
@@ -46,11 +46,16 @@ export function Stars({
           </motion.span>
         ))}
       </span>
-      <span className="text-xs text-ink-mute">
+      <span className="shrink-0 whitespace-nowrap text-xs text-ink-mute">
         {value > 0 ? value.toFixed(1) : "New"}
         {count !== undefined && count > 0 && ` (${count})`}
       </span>
-      <span className="jp text-[10px] font-bold leading-none text-clay" aria-hidden="true">
+      {/* the SFX label yields first — it used to push this whole row past the
+          width of a 2-up card on a 375px phone, scrolling the document */}
+      <span
+        className="jp min-w-0 truncate text-[10px] font-bold leading-tight text-clay"
+        aria-hidden="true"
+      >
         {sfxLabel(value)}
       </span>
     </span>

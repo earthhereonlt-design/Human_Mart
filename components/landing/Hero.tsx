@@ -57,32 +57,32 @@ export function Hero({ people, listings }: { people: number; listings: number })
       </span>
 
       <motion.div
-        className="container-page relative flex items-end justify-center gap-6 pb-12 pt-10 md:gap-12 md:pb-28 md:pt-24"
+        className="container-page relative flex items-end justify-center gap-6 pb-12 pt-10 md:gap-12 md:pb-[clamp(2.5rem,6vh,7rem)] md:pt-[clamp(1.75rem,5vh,6rem)]"
         style={reduce ? undefined : { opacity: fadeHero }}
         initial="hidden"
         animate="show"
         variants={{ hidden: {}, show: { transition: { staggerChildren: 0.16 } } }}
       >
-        {/* side mascot — the shopkeeper */}
+        {/* side mascot — the shopkeeper (from lg up; tablets keep the compact pair) */}
         <motion.div
           variants={{
             hidden: { opacity: 0, y: 70, scale: 0.7, rotate: -6 },
             show: { opacity: 1, y: 0, scale: 1, rotate: 0, transition: { ...springBouncy, delay: 0.5 } },
           }}
-          className="hidden shrink-0 md:block"
+          className="hidden shrink-0 lg:block"
           style={reduce ? undefined : { y: yMascots }}
         >
-          <Chibi mood="waiting" className="h-56 w-auto lg:h-72" />
+          <Chibi mood="waiting" className="h-[clamp(7rem,14vw,17rem)] w-auto" />
         </motion.div>
 
         <div className="max-w-2xl text-center">
-          {/* phones get the mascots too — a compact pair above the masthead */}
+          {/* phones and tablets get the mascots too — a compact pair above the masthead */}
           <motion.div
             variants={{
               hidden: { opacity: 0, y: 40, scale: 0.7 },
               show: { opacity: 1, y: 0, scale: 1, transition: { ...springBouncy, delay: 0.55 } },
             }}
-            className="mb-0 flex items-end justify-center gap-4 md:hidden"
+            className="mb-0 flex items-end justify-center gap-4 lg:hidden"
           >
             <Chibi mood="waiting" className="h-24 w-auto" />
             <LuckyCat className="h-18 w-auto self-center" />
@@ -129,7 +129,7 @@ export function Hero({ people, listings }: { people: number; listings: number })
 
           <motion.div
             variants={{ hidden: { opacity: 0, y: 26 }, show: { opacity: 1, y: 0, transition: springSoft } }}
-            className="mt-7 flex flex-col justify-center gap-3 sm:flex-row md:mt-10 md:gap-4"
+            className="mt-7 flex flex-col justify-center gap-3 sm:flex-row md:mt-[clamp(1.5rem,3vh,2.5rem)] md:gap-4"
           >
             <Magnetic>
               <Link
@@ -152,7 +152,7 @@ export function Hero({ people, listings }: { people: number; listings: number })
           {people > 0 && (
             <motion.div
               variants={{ hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0, transition: springSoft } }}
-            className="mt-8 flex flex-wrap items-stretch justify-center gap-2.5 md:mt-12 md:gap-3"
+              className="mt-8 flex flex-wrap items-stretch justify-center gap-2.5 md:mt-[clamp(1.75rem,3.5vh,3rem)] md:gap-3"
           >
             {[
               { n: people, count: true, l: "humans in stock" },
@@ -185,10 +185,10 @@ export function Hero({ people, listings }: { people: number; listings: number })
             hidden: { opacity: 0, y: 70, scale: 0.7, rotate: 6 },
             show: { opacity: 1, y: 0, scale: 1, rotate: 0, transition: { ...springBouncy, delay: 0.7 } },
           }}
-          className="hidden shrink-0 self-center md:block"
+          className="hidden shrink-0 self-center lg:block"
           style={reduce ? undefined : { y: yMascots }}
         >
-          <LuckyCat className="h-48 w-auto lg:h-60" />
+          <LuckyCat className="h-[clamp(6rem,12vw,15rem)] w-auto" />
         </motion.div>
       </motion.div>
     </section>

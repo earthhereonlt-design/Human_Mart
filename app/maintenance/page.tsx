@@ -22,25 +22,31 @@ export default async function MaintenancePage() {
   if (!active) redirect("/");
 
   return (
-    <main className="relative grid min-h-screen place-items-center overflow-hidden bg-ivory px-6">
+    <main
+      id="maintenance-screen"
+      className="relative grid min-h-dvh place-items-center overflow-hidden bg-ivory px-6 py-8"
+    >
       <div className="speedlines absolute inset-0" aria-hidden="true" />
       <div className="halftone absolute inset-0" aria-hidden="true" />
 
       <div className="relative flex max-w-lg flex-col items-center text-center">
-        <span className="sfx sfx-outline text-4xl md:text-5xl">閉店中</span>
-        <Chibi mood="lonely" className="mt-10 h-52 w-auto md:h-60" />
-        <h1 className="headline mt-10 text-3xl md:text-4xl">
+        <span className="sfx sfx-outline text-[clamp(2rem,3.5vw+1.5vh,3rem)]">閉店中</span>
+        <Chibi mood="lonely" className="mt-[clamp(1.25rem,3.5vh,2.5rem)] h-[clamp(8.5rem,24vh,15rem)] w-auto" />
+        <h1 className="headline mt-[clamp(1.25rem,3.5vh,2.5rem)] text-[clamp(1.5rem,2.2vw+1vh,2.25rem)]">
           Closed for restocking
         </h1>
-        <p className="hand mt-3 max-w-sm text-lg leading-relaxed text-ink-mute">
+        <p className="hand mt-2 max-w-sm text-[clamp(0.95rem,1.1vw,1.125rem)] leading-relaxed text-ink-mute">
           {m?.note ?? "Restocking the shelves. Back soon!"}
         </p>
 
-        <div className="mt-10">
+        <div className="mt-[clamp(1.25rem,3.5vh,2.5rem)]">
           <Countdown endsAt={endsAt!.toISOString()} />
         </div>
 
-        <p className="jp mt-10 text-sm tracking-[0.4em] text-ink-faint" aria-hidden="true">
+        <p
+          className="jp mt-[clamp(1.25rem,3.5vh,2.5rem)] text-[0.8rem] tracking-[0.4em] text-ink-faint"
+          aria-hidden="true"
+        >
           しばらくお待ちください
         </p>
       </div>

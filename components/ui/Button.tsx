@@ -25,7 +25,9 @@ const variants: Record<Variant, string> = {
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-9 px-3.5 text-[11px]",
+  // 40px on phones for a thumb-sized target, back to 36px from sm: up so the
+  // admin and account rows keep their density
+  sm: "h-10 px-3.5 text-[11px] sm:h-9",
   md: "h-11 px-5 text-xs",
   lg: "h-[52px] px-7 text-[13px]",
 };

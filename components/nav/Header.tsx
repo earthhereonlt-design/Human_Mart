@@ -53,21 +53,23 @@ export function Header({ userName, isAdmin }: { userName: string | null; isAdmin
             : "border-transparent bg-transparent"
         )}
       >
-        <div className="container-page flex h-16 items-center justify-between gap-4 md:h-[74px]">
+        <div className="container-page flex h-16 items-center justify-between gap-2 md:h-[74px] md:gap-4">
           {/* wordmark — hanko stamp + impact type */}
           <Link
             href="/"
             aria-label="Human Mart — home"
             className={cn(
-              "group flex origin-left items-center gap-2.5 transition-transform duration-300",
+              "group flex min-w-0 origin-left items-center gap-2.5 transition-transform duration-300",
               scrolled && "scale-[0.92]"
             )}
           >
-            <span className="jp grid h-9 w-9 -rotate-3 place-items-center border-2 border-ink bg-clay text-lg leading-none text-cream shadow-[3px_3px_0_var(--color-ink)] transition-transform duration-300 group-hover:rotate-3">
+            <span className="jp grid h-9 w-9 shrink-0 -rotate-3 place-items-center border-2 border-ink bg-clay text-lg leading-none text-cream shadow-[3px_3px_0_var(--color-ink)] transition-transform duration-300 group-hover:rotate-3">
               人
             </span>
-            <span className="headline text-xl tracking-wide md:text-[22px]">
-              Human&nbsp;Mart
+            {/* no &nbsp; — it made this an unbreakable ~187px flex item that
+                crushed the action buttons on a 375px phone */}
+            <span className="headline truncate text-xl tracking-wide md:text-[22px]">
+              Human Mart
             </span>
           </Link>
 
@@ -93,7 +95,7 @@ export function Header({ userName, isAdmin }: { userName: string | null; isAdmin
           </nav>
 
           {/* actions */}
-          <div className="flex items-center gap-1 md:gap-2">
+          <div className="flex shrink-0 items-center gap-1 md:gap-2">
             <Link
               href="/explore"
               aria-label="Search the market"
@@ -153,52 +155,54 @@ export function Header({ userName, isAdmin }: { userName: string | null; isAdmin
             </button>
           </div>
         </div>
-      </motion.header>
 
-      {/* mobile menu */}
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-x-0 top-16 z-30 border-b-[3px] border-ink bg-ivory px-6 pb-8 pt-4 shadow-[0_10px_0_rgba(22,19,14,0.15)] md:hidden"
-          >
-            <nav className="flex flex-col gap-1" aria-label="Mobile">
-              {[
-                { href: "/explore", label: "Explore" },
-                { href: "/explore#categories", label: "Categories" },
-                { href: userName ? "/account" : "/login", label: userName ? `Account — ${userName}` : "Sign in" },
-                { href: "/cart", label: "Cart" },
-                ...(isAdmin ? [{ href: "/admin", label: "管理人 Admin" }] : []),
-              ].map((l, i) => (
-                <motion.div
-                  key={l.label}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 * i }}
-                >
-                  <Link
-                    href={l.href}
-                    className="headline block border-b-2 border-ink/15 py-4 text-xl"
-                    onClick={() => setMenuOpen(false)}
+        {/* mobile menu — anchored to the header rather than a hardcoded 64px.
+            Between 640 and 767px the chapter strip pushes the header down
+            ~32px, and a `fixed top-16` panel landed on top of it. */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-x-0 top-full z-30 border-b-[3px] border-ink bg-ivory px-6 pb-8 pt-4 shadow-[0_10px_0_rgba(22,19,14,0.15)] md:hidden"
+            >
+              <nav className="flex flex-col gap-1" aria-label="Mobile">
+                {[
+                  { href: "/explore", label: "Explore" },
+                  { href: "/explore#categories", label: "Categories" },
+                  { href: userName ? "/account" : "/login", label: userName ? `Account — ${userName}` : "Sign in" },
+                  { href: "/cart", label: "Cart" },
+                  ...(isAdmin ? [{ href: "/admin", label: "管理人 Admin" }] : []),
+                ].map((l, i) => (
+                  <motion.div
+                    key={l.label}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 * i }}
                   >
-                    {l.label}
-                  </Link>
-                </motion.div>
-              ))}
-              <Link
-                href="/list"
-                onClick={() => setMenuOpen(false)}
-                className="mt-5 inline-flex h-12 items-center justify-center border-2 border-ink bg-clay font-display text-[13px] uppercase tracking-[0.1em] text-[#fbf8ee] shadow-[4px_4px_0_var(--color-ink)]"
-              >
-                List a human
-              </Link>
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                    <Link
+                      href={l.href}
+                      className="headline block truncate border-b-2 border-ink/15 py-4 text-xl"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {l.label}
+                    </Link>
+                  </motion.div>
+                ))}
+                <Link
+                  href="/list"
+                  onClick={() => setMenuOpen(false)}
+                  className="mt-5 inline-flex h-12 items-center justify-center border-2 border-ink bg-clay font-display text-[13px] uppercase tracking-[0.1em] text-[#fbf8ee] shadow-[4px_4px_0_var(--color-ink)]"
+                >
+                  List a human
+                </Link>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
     </>
   );
 }

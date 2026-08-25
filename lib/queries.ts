@@ -74,14 +74,17 @@ async function fallbackKeywordSearch(opts: ListOptions): Promise<MarketListing[]
   }
 }
 
-export async function getListing(id: string): Promise<MarketListing | null> {
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function getListing(idOrSlug: string): Promise<MarketListing | null> {
   if (!isSupabaseConfigured()) return null;
   try {
     const supabase = await createClient();
+    // pretty URLs use slugs (/listing/ansh); legacy links still carry UUIDs
     const { data, error } = await supabase
       .from("market_listings")
       .select("*")
-      .eq("id", id)
+      .eq(UUID_RE.test(idOrSlug) ? "id" : "slug", idOrSlug)
       .maybeSingle();
     if (error) throw new Error(error.message);
     return (data as MarketListing) ?? null;

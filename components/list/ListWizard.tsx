@@ -14,9 +14,10 @@ import { Field, Input, Textarea, Select } from "@/components/ui/Input";
 interface Props {
   myName: string;
   myPersonId: string | null;
+  myPersonPhoto?: string | null;
 }
 
-export function ListWizard({ myName, myPersonId }: Props) {
+export function ListWizard({ myName, myPersonId, myPersonPhoto }: Props) {
   const router = useRouter();
   const [step, setStep] = useState(0);
 
@@ -24,7 +25,10 @@ export function ListWizard({ myName, myPersonId }: Props) {
   const [who, setWho] = useState<"self" | "other">(myPersonId ? "self" : "other");
   const [personName, setPersonName] = useState(who === "self" ? myName : "");
   const [personBio, setPersonBio] = useState("");
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  // in self mode your existing shelf photo starts filled in — replace at will
+  const [photoUrl, setPhotoUrl] = useState<string | null>(
+    who === "self" ? (myPersonPhoto ?? null) : null
+  );
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -45,6 +49,11 @@ export function ListWizard({ myName, myPersonId }: Props) {
   const effectiveUnit = unit === "__custom" ? customUnit.trim() : unit;
   const priceNum = Number(price);
   const displayName = who === "self" ? myName : personName;
+
+  const chooseWho = (mode: "self" | "other") => {
+    setWho(mode);
+    setPhotoUrl(mode === "self" ? (myPersonPhoto ?? null) : null);
+  };
 
   const uploadPhoto = async (file: File) => {
     setError(null);
@@ -112,14 +121,15 @@ export function ListWizard({ myName, myPersonId }: Props) {
 
   return (
     <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr] lg:gap-16">
-      <div>
-        {/* progress */}
-        <ol className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.14em]">
+      <div className="min-w-0">
+        {/* progress — the three labels plus their connectors measured ~388px,
+            past the 335px a 375px phone actually has */}
+        <ol className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[10px] font-medium uppercase tracking-[0.14em]">
           {steps.map((s, i) => (
             <li key={s} className="flex items-center gap-2">
               <span
                 className={cn(
-                  "grid h-6 w-6 place-items-center rounded-full border text-[10px] tabular-nums transition-colors",
+                  "grid h-6 w-6 shrink-0 place-items-center rounded-full border text-[10px] tabular-nums transition-colors",
                   i < step
                     ? "border-sage bg-sage text-cream"
                     : i === step
@@ -130,7 +140,7 @@ export function ListWizard({ myName, myPersonId }: Props) {
                 {i < step ? <Check size={11} /> : i + 1}
               </span>
               <span className={i === step ? "text-ink" : "text-ink-faint"}>{s}</span>
-              {i < steps.length - 1 && <span className="mx-1 h-px w-6 bg-sand" />}
+              {i < steps.length - 1 && <span className="mx-1 hidden h-px w-6 bg-sand sm:block" />}
             </li>
           ))}
         </ol>
@@ -151,7 +161,7 @@ export function ListWizard({ myName, myPersonId }: Props) {
                     {myName && (
                       <button
                         type="button"
-                        onClick={() => setWho("self")}
+                        onClick={() => chooseWho("self")}
                         className={cn(
                           "h-11 border px-4 text-xs transition-colors",
                           who === "self"
@@ -164,7 +174,7 @@ export function ListWizard({ myName, myPersonId }: Props) {
                     )}
                     <button
                       type="button"
-                      onClick={() => setWho("other")}
+                      onClick={() => chooseWho("other")}
                       className={cn(
                         "h-11 border px-4 text-xs transition-colors",
                         who === "other"

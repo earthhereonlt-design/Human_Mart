@@ -31,7 +31,7 @@ export default async function LandingPage() {
           <Reveal variant="3d">
             <div>
               <span className="stamp">しくみ</span>
-              <h2 className="headline mt-5 text-3xl md:text-4xl">
+              <h2 className="headline mt-5 text-h2">
                 <SplitTitle text="Commerce, performed with a straight face." />
               </h2>
               <p className="hand mt-4 text-lg text-ink-mute">— "how this works," in 3 panels</p>
@@ -70,7 +70,7 @@ export default async function LandingPage() {
                   {s.n}
                 </span>
                 <div>
-                  <h3 className="headline text-xl md:text-2xl">{s.t}</h3>
+                  <h3 className="headline text-h3">{s.t}</h3>
                   <p className="mt-2 max-w-md text-sm leading-relaxed text-ink-mute">{s.d}</p>
                 </div>
               </StaggerItem>
@@ -87,7 +87,7 @@ export default async function LandingPage() {
             <div className="flex flex-wrap items-end justify-between gap-6">
               <div>
                 <span className="stamp">新着</span>
-                <h2 className="headline mt-4 text-3xl md:text-4xl">
+                <h2 className="headline mt-4 text-h2">
                   <SplitTitle text="Fresh stock" />
                 </h2>
               </div>

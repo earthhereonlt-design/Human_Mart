@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function ListPage() {
   let myName = "";
   let myPersonId: string | null = null;
+  let myPersonPhoto: string | null = null;
 
   if (isSupabaseConfigured()) {
     try {
@@ -17,12 +18,35 @@ export default async function ListPage() {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
-        const [profileRes, personRes] = await Promise.all([
-          supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle(),
-          supabase.from("people").select("id").eq("created_by", user.id).limit(1),
-        ]);
+        const profileRes = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", user.id)
+          .maybeSingle();
         myName = profileRes.data?.display_name ?? "";
-        myPersonId = personRes.data?.[0]?.id ?? null;
+
+        // your own row on the shelf — claimed, or one you created under your
+        // own name. NOT the first "someone else" you ever listed.
+        const claimed = await supabase
+          .from("people")
+          .select("id, photo_url")
+          .eq("claimed_by", user.id)
+          .maybeSingle();
+        if (claimed.data) {
+          myPersonId = claimed.data.id;
+          myPersonPhoto = claimed.data.photo_url ?? null;
+        } else if (myName) {
+          const own = await supabase
+            .from("people")
+            .select("id, photo_url")
+            .eq("created_by", user.id)
+            .ilike("name", myName)
+            .limit(1);
+          if (own.data?.length) {
+            myPersonId = own.data[0].id;
+            myPersonPhoto = own.data[0].photo_url ?? null;
+          }
+        }
       }
     } catch {
       // fall through with empty state
@@ -44,7 +68,7 @@ export default async function ListPage() {
       </div>
 
       <div className="mt-12">
-        <ListWizard myName={myName} myPersonId={myPersonId} />
+        <ListWizard myName={myName} myPersonId={myPersonId} myPersonPhoto={myPersonPhoto} />
       </div>
     </div>
   );
